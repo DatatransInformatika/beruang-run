@@ -1,4 +1,5 @@
 import {BeruangTextNode} from './noderesolver/beruang-textnode.js';
+import {BeruangElement} from './noderesolver/beruang-element.js';
 
 export const BeruangView = (base) =>
 class extends base {
@@ -31,16 +32,24 @@ class extends base {
     return this._textNode;
   }
 
+  get element() {
+    if(!this._element) {
+      this._element = new BeruangElement();
+    }
+    return this._element;
+  }
+
   parseTemplate(root) {
     root.childNodes.forEach((node, i) => {
       if(node.localName==='style') {
         //parse style here
       } else {
-        if(node.nodeType===1/*Element*/) {
-          this.parseTemplate(node);//recursive
-        } else if(node.nodeType===3/*Text*/) {
+        if(node.nodeType===3/*Text*/) {
           let props = Object.keys(this.presenter.prop);
           this.textNode.parse(node, props, this.presenter, this.propNodeMap);
+        } else if(node.nodeType==1/*Element*/) {
+          //this.element.parse(....);
+          this.parseTemplate(node);//recursive
         }
       }
     });
@@ -54,6 +63,8 @@ class extends base {
       this.propNodeMap[p].forEach((node, i) => {
         if(node.nodeType===3/*Text*/) {
           this.textNode.substitute(node, p, val);
+        } else if(node.nodeType==1/*Element*/) {
+          //this.element.substitute(node, p, val);
         }
         if(affectedNodes.indexOf(node)==-1){
           affectedNodes.push(node);
@@ -64,6 +75,8 @@ class extends base {
     affectedNodes.forEach((node, i) => {
       if(node.nodeType===3/*Text*/) {
         this.textNode.solve(this, node);
+      } else if(node.nodeType==1/*Element*/) {
+        //this.element.solve(this, node);
       }
     });
   }

@@ -16,7 +16,7 @@ class SampleView extends BeruangView(Object) {
     </style>
     <div><div>ABC</div></div>
 [[address]]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>[[label]]
-Desktop [[_large(123, label, ADUH)]] at [[address]]
+Desktop [[_large (123, label, ADUH)]] at [[address]]
 once more [[_large(123, label, ADUH)]]</b>
     <slot></slot>`;
   }

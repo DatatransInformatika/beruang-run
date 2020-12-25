@@ -6,6 +6,7 @@ class BeruangTextNode extends BeruangNodeResolver(Object) {
     super();
   }
 
+  /*override parent abstract method*/
   parse(node, props, presenter, propNodeMap) {
     let brackets = node.textContent.match(/[[]{2}\s{0,}\S{1,}\s{0,}[^[]{1,}]{2}/g);
     if(brackets){
@@ -31,6 +32,7 @@ class BeruangTextNode extends BeruangNodeResolver(Object) {
     }
   }
 
+  /*override parent abstract method*/
   solve(view, node) {
     let s = node.rawContent;
     node.terms.forEach((term, i) => {

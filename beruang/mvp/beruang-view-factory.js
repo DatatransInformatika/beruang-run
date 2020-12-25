@@ -35,6 +35,13 @@ class extends base {
     }
   }
 
+  static _trim(s) {
+    s = s.replace(/\s+</g, '<');
+    s = s.replace(/>\s+/g, '>');
+    return s;
+  }
+
+//abstract:BEGIN
   static _getViewClsName() {
     throw new Error("BeruangViewFactory: you have to call _getViewClsName method implemented by child only!");
   }
@@ -42,11 +49,5 @@ class extends base {
   static _getViewJs(formfactor) {
     throw new Error("BeruangViewFactory: you have to call _getViewJs method implemented by child only!");
   }
-
-  static _trim(s) {
-    s = s.replace(/\s+</g, '<');
-    s = s.replace(/>\s+/g, '>');
-    return s;
-  }
-
+//abstract:END
 }

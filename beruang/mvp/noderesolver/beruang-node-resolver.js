@@ -24,7 +24,7 @@ class extends base {
   }
 
   tmplFunc(stmt, node, ctx, propNodeMap) {
-    let arr = stmt.match(/(\S+)\((.*)\)$/); /*get function name and arguments*/
+    let arr = stmt.match(/(\S+)\s*\((.*)\)$/);/*function name and arguments*/
     if(!arr || arr.length<2) {
       return null;
     }
@@ -63,4 +63,14 @@ class extends base {
       map[prop] = arr;
     }
   }
+
+//abstract:BEGIN
+  parse(node, props, presenter, propNodeMap) {
+    throw new Error("BeruangNodeResolver: you have to call parse method implemented by child only!");
+  }
+
+  solve(view, node) {
+    throw new Error("BeruangNodeResolver: you have to call solve method implemented by child only!");
+  }
+//abstract:END
 }
