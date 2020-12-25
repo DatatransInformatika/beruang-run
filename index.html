@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Beruang</title>
+  <script type="application/javascript" src="./beruang/util/beruang-init.js" async="false"></script>
+  <script type="module" src="./sample/sample-presenter.js" async="false"></script>
+  <script type="application/javascript" async="false">
+  function f() {
+    let el = document.querySelector('sample-presenter');
+    //console.log(/*el.baseLabel,*/ el.label, el.address, el.func);
+    setTimeout(()=>{el.label='Cicit';}, 500);
+  }
+  </script>
+</head>
+<body onload="f()">
+  <sample-presenter>abc</sample-presenter>
+</body>
+</html>
