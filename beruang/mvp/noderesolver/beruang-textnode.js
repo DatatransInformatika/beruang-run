@@ -1,4 +1,5 @@
 import {BeruangNodeResolver} from './beruang-node-resolver.js';
+import {BeruangCoercer} from '../beruang-coercer.js';
 
 class BeruangTextNode extends BeruangNodeResolver(Object) {
 
@@ -42,6 +43,10 @@ class BeruangTextNode extends BeruangNodeResolver(Object) {
         val = view[term.fname].apply(view, term.vals);
       } else {
         val = term.vals[0];
+      }
+      if(term.neg){
+        let coercer = new BeruangCoercer();
+        val = !coercer.coerce(Boolean, val);
       }
       if(val!=null) {
         s = s.replaceAll('[[' + term.stmt + ']]', val);

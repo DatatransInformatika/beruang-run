@@ -14,12 +14,16 @@ class extends base {
   }
 
   tmplSimple(stmt, node, presenter, propNodeMap) {
-    stmt = stmt.trim();
-    if(presenter.prop.hasOwnProperty(stmt)) {
-      let term = {'stmt':stmt, 'fname':null, 'args':[stmt],
-        'vals':[presenter[stmt]]};
-      this._propNodeMap(propNodeMap, stmt, node);
-      return {'term':term, 'props':[stmt]};
+    let prop  = stmt.trim();
+    let neg = prop.substring(0,1)==='!';
+    if(neg){
+      prop = prop.substring(1).trim();
+    }
+    if(presenter.prop.hasOwnProperty(prop)) {
+      let term = {'stmt':stmt, 'fname':null, 'args':[prop],
+        'vals':[presenter[prop]], 'neg':neg};
+      this._propNodeMap(propNodeMap, prop, node);
+      return {'term':term, 'props':[prop]};
     }
     return null;
   }
@@ -29,7 +33,14 @@ class extends base {
     if(!arr || arr.length<2) {
       return null;
     }
-    let term = {'stmt':stmt, 'fname':arr[1], 'args':[], 'vals':[]};
+
+    let fname = arr[1];
+    let neg = fname.substring(0,1)==='!';
+    if(neg){
+      fname = fname.substring(1).trim();
+    }
+
+    let term = {'stmt':stmt, 'fname':fname, 'args':[], 'vals':[], 'neg':neg};
     let props = [];
     let sarg = arr.length>2 ? arr[2] : null;
     if(sarg) {
