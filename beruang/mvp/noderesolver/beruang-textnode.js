@@ -7,33 +7,34 @@ class BeruangTextNode extends BeruangNodeResolver(Object) {
   }
 
   /*override parent abstract method*/
-  parse(node, props, presenter, propNodeMap) {
-    let brackets = node.textContent.match(/[[]{2}\s{0,}\S{1,}\s{0,}[^[]{1,}]{2}/g);
-    if(brackets){
-      brackets.forEach((bracket, i) => { /*[[...]]*/
-        let stmt = bracket.replace(/^[[]{2}|]{2}$/g, '').trim();/*remove brackets*/
-        if(node.terms && this.termExists(node.terms, stmt)){
-          return;
-        }
-        let term = this.tmplSimple(stmt, node, presenter, propNodeMap);
-        if(!term) {
-          term = this.tmplFunc(stmt, node, presenter, propNodeMap);
-        }
-        if(term!=null) {
-          if(!node.terms) {
-            node.terms = [];
-          }
-          node.terms.push(term);
-        }
-      });
-      if(node.terms) {
-        node.rawContent = node.textContent;
+  parse(node, presenter, propNodeMap) {
+    let gs = node.textContent.match(/[[]{2}\s{0,}\S{1,}\s{0,}[^[]{1,}]{2}/g);
+    if(!gs){
+      return;
+    }
+    gs.forEach((g, i) => { /*[[...]]*/
+      let stmt = g.replace(/^[[]{2}|]{2}$/g, '').trim();/*remove brackets*/
+      if(node.terms && this.termExists(node.terms, stmt)){
+        return;
       }
+      let obj = this.tmplSimple(stmt, node, presenter, propNodeMap)
+        || this.tmplFunc(stmt, node, presenter, propNodeMap);
+      if(obj) {
+        if(!node.terms) {
+          node.terms = [];
+          node.props = [];
+        }
+        node.terms.push(obj.term);
+        node.props = node.props.concat(obj.props);
+      }
+    });
+    if(node.terms) {
+      node.rawContent = node.textContent;
     }
   }
 
   /*override parent abstract method*/
-  solve(view, node) {
+  solve(view, node, propNodeMap) {
     let s = node.rawContent;
     node.terms.forEach((term, i) => {
       let val = null;

@@ -6,7 +6,6 @@ class extends BeruangProperty(base) {
   constructor(viewFactory){
     super();
 
-    this.attr = {};
     let cls = this.constructor;
     while(cls) {
       if(cls.properties) {
@@ -21,7 +20,7 @@ class extends BeruangProperty(base) {
       let shadowRoot = this.attachShadow({mode: 'open'});
       shadowRoot.appendChild(tmpl.content.cloneNode(true));
       this.view.parseTemplate(shadowRoot);
-      this.view.updateNode(Object.keys(this.view.propNodeMap));
+      this.view.updateNode(Object.keys(this.view.propNodeMap), []);
     });
   }
 

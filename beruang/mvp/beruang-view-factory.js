@@ -43,11 +43,13 @@ class extends base {
 
 //abstract:BEGIN
   static _getViewClsName() {
-    throw new Error("BeruangViewFactory: you have to call _getViewClsName method implemented by child only!");
+    throw new Error('BeruangViewFactory: you have to call '
+      + '_getViewClsName method implemented by child only!');
   }
 
   static _getViewJs(formfactor) {
-    throw new Error("BeruangViewFactory: you have to call _getViewJs method implemented by child only!");
+    throw new Error('BeruangViewFactory: you have to call '
+      + '_getViewJs method implemented by child only!');
   }
 //abstract:END
 }

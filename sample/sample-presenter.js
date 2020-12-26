@@ -24,6 +24,11 @@ class SamplePresenter extends BeruangPresenter(HTMLElement) {
         type:String,
         value:'Batam'
       },
+
+      show: {
+        type:Boolean,
+        value:false
+      }
     }
   }
 

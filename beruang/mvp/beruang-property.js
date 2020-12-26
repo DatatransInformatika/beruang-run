@@ -12,7 +12,7 @@ class extends base {
   }
 
   set prop(obj) {
-    return this._prop = obj;
+    this._prop = obj;
   }
 
   get coercer() {
@@ -64,7 +64,7 @@ class extends base {
       val = (observer || reflectToAttr) ? this[p] : null;
 
       if(this.view) {
-        this.view.updateNode([p]);
+        this._delayedUpdateNode(p);
       }
 
       if(observer && val!=old) {
@@ -85,5 +85,22 @@ class extends base {
         }
       }
     };
+  }
+
+  _delayedUpdateNode(prop) {
+    this._updatedProps = this._updatedProps || [];
+    if(this._updatedProps.indexOf(prop)>-1){
+      return;
+    }
+    this._updatedProps.push(prop);
+    if(this._updateNodeXval) {
+      clearTimeout(this._updateNodeXval);
+    }
+    this._updateNodeXval = setTimeout(
+      ()=>{
+          this.view.updateNode(this._updatedProps, []);
+          this._updateNodeXval = null;
+          this._updatedProps = null;
+      }, 50);
   }
 }

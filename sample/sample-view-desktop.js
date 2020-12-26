@@ -18,7 +18,8 @@ class SampleView extends BeruangView(Object) {
 [[address]]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>[[label]]
 Desktop [[_large (123, label, ADUH)]] at [[address]]
 once more [[_large(123, label, ADUH)]]</b>
-    <slot></slot>`;
+    <slot></slot>
+    <template data-tmpl-switch="show"><div>conditional [[label]]</div></template>`;
   }
 
   _large(n, s, t) {

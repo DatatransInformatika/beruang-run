@@ -13,38 +13,41 @@ class extends base {
     return false;
   }
 
-  tmplSimple(stmt, node, ctx, propNodeMap) {
+  tmplSimple(stmt, node, presenter, propNodeMap) {
     stmt = stmt.trim();
-    if(ctx.hasOwnProperty(stmt)) {
-      let term = {'stmt':stmt, 'fname':null, 'args':[stmt], 'vals':[ctx[stmt]]};
+    if(presenter.prop.hasOwnProperty(stmt)) {
+      let term = {'stmt':stmt, 'fname':null, 'args':[stmt],
+        'vals':[presenter[stmt]]};
       this._propNodeMap(propNodeMap, stmt, node);
-      return term;
+      return {'term':term, 'props':[stmt]};
     }
     return null;
   }
 
-  tmplFunc(stmt, node, ctx, propNodeMap) {
+  tmplFunc(stmt, node, presenter, propNodeMap) {
     let arr = stmt.match(/(\S+)\s*\((.*)\)$/);/*function name and arguments*/
     if(!arr || arr.length<2) {
       return null;
     }
     let term = {'stmt':stmt, 'fname':arr[1], 'args':[], 'vals':[]};
+    let props = [];
     let sarg = arr.length>2 ? arr[2] : null;
     if(sarg) {
       sarg.split(',').forEach((arg, i) => {
         arg = arg.trim();
         if(arg.length>0) {
             term['args'].push(arg);
-            if(ctx.hasOwnProperty(arg)) {
-              term['vals'].push(ctx[arg]);
+            if(presenter.prop.hasOwnProperty(arg)) {
+              term['vals'].push(presenter[arg]);
               this._propNodeMap(propNodeMap, arg, node);
+              props.push(arg);
             } else {
               term['vals'].push(arg);
             }
         }
       });
     }
-    return term;
+    return {'term':term, 'props':props};
   }
 
   substitute(node, p, val) {
@@ -65,12 +68,14 @@ class extends base {
   }
 
 //abstract:BEGIN
-  parse(node, props, presenter, propNodeMap) {
-    throw new Error("BeruangNodeResolver: you have to call parse method implemented by child only!");
+  parse(node, presenter, propNodeMap) {
+    throw new Error('BeruangNodeResolver: you have to call parse method ' +
+      'implemented by child only!');
   }
 
-  solve(view, node) {
-    throw new Error("BeruangNodeResolver: you have to call solve method implemented by child only!");
+  solve(view, node, propNodeMap) {
+    throw new Error('BeruangNodeResolver: you have to call solve method ' +
+      'implemented by child only!');
   }
 //abstract:END
 }
