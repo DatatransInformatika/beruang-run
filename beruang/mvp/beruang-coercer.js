@@ -4,22 +4,22 @@ class BeruangCoercer {
     let n = null;
     switch(expectedType) {
       case Boolean:
-        n = this._toBoolean(val);
+        n = this.toBoolean(val);
         break;
       case String:
-        n = this._toString(val);
+        n = this.toString(val);
         break;
       case Number:
-        n = this._toNumber(val);
+        n = this.toNumber(val);
         break;
       case Date:
-        n = this._toDate(val);
+        n = this.toDate(val);
         break;
       case Object:
-        n = this._toObject(val);
+        n = this.toObject(val);
         break;
       case Array:
-        n = this._toArray(val);
+        n = this.toArray(val);
         break;
       default:
         break;
@@ -27,7 +27,7 @@ class BeruangCoercer {
     return n;
   }
 
-  _toBoolean(val) {
+  toBoolean(val) {
     if(val===undefined || val===null) {
       return false;
     }
@@ -49,7 +49,7 @@ class BeruangCoercer {
     return v;
   }
 
-  _toString(val) {
+  toString(val) {
     if(val===undefined || val===null) {
       return null;
     }
@@ -65,7 +65,7 @@ class BeruangCoercer {
     return v;
   }
 
-  _toNumber(val) {
+  toNumber(val) {
     if(val===undefined || val===null) {
       return 0;
     }
@@ -89,7 +89,7 @@ class BeruangCoercer {
     return v;
   }
 
-  _toDate(val) {
+  toDate(val) {
     if(val===undefined || val===null) {
       return null;
     }
@@ -113,18 +113,27 @@ class BeruangCoercer {
     return v;
   }
 
-  _toObject(val) {
+  toObject(val) {
     if(val===undefined || val===null) {
       return null;
     }
     return val.constructor.name==='Object' ? val : null;
   }
 
-  _toArray(val) {
+  toArray(val) {
     if(val===undefined || val===null) {
       return null;
     }
-    return val.constructor.name==='Array' ? val : null;
+    let v = null;
+    switch(val.constructor.name) {
+      case 'Array':
+        v = val;
+        break;
+      default:
+        v = [val];
+        break;
+    }
+    return v;
   }
 
 }

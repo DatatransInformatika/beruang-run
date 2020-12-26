@@ -1,7 +1,16 @@
+import {BeruangCoercer} from '../beruang-coercer.js';
+
 export const BeruangNodeResolver = (base) =>
 class extends base {
   constructor(){
     super();
+  }
+
+  get coercer() {
+    if(!this._coercer){
+      this._coercer = new BeruangCoercer();
+    }
+    return this._coercer;
   }
 
   termExists(terms, stmt) {
@@ -20,7 +29,7 @@ class extends base {
       prop = prop.substring(1).trim();
     }
     if(presenter.prop.hasOwnProperty(prop)) {
-      let term = {'stmt':stmt, 'fname':null, 'args':[prop],
+      let term = {'stmt':stmt, 'fname':null, 'args':[prop], 'negs':[neg],
         'vals':[presenter[prop]], 'neg':neg};
       this._propNodeMap(propNodeMap, prop, node);
       return {'term':term, 'props':[prop]};
@@ -40,19 +49,28 @@ class extends base {
       fname = fname.substring(1).trim();
     }
 
-    let term = {'stmt':stmt, 'fname':fname, 'args':[], 'vals':[], 'neg':neg};
+    let term = {'stmt':stmt, 'fname':fname, 'args':[], 'negs':[], 'vals':[],
+      'neg':neg};
     let props = [];
     let sarg = arr.length>2 ? arr[2] : null;
     if(sarg) {
       sarg.split(',').forEach((arg, i) => {
         arg = arg.trim();
         if(arg.length>0) {
-            term['args'].push(arg);
-            if(presenter.prop.hasOwnProperty(arg)) {
+          let prop = arg;
+          let neg = arg.substring(0,1)==='!';
+          if(neg){
+            prop = arg.substring(1).trim();
+          }
+          if(presenter.prop.hasOwnProperty(prop)) {
+              term['args'].push(prop);
+              term['negs'].push(neg);
               term['vals'].push(presenter[arg]);
               this._propNodeMap(propNodeMap, arg, node);
               props.push(arg);
             } else {
+              term['args'].push(arg);
+              term['negs'].push(false);
               term['vals'].push(arg);
             }
         }
@@ -65,6 +83,9 @@ class extends base {
     node.terms.forEach((term, i) => {
       let idx = term.args.indexOf(p);
       if(idx > -1) {
+        if(term.negs[idx]) {
+          val = !this.coercer.toBoolean(val);
+        }
         term.vals[idx] = val;
       }
     });

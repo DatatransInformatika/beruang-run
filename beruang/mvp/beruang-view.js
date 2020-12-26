@@ -143,9 +143,9 @@ class extends base {
     if(clones.length>0) {
       let excludes = nodeExcludes.concat(visitedNodes);
       clones.forEach((clone, i) => {
-        this._parseNode(clone);
-        this.updateNode(Object.keys(this.presenter.prop), excludes);
+        this._parseNode(clone);        
       });
+      this.updateNode(Object.keys(this.presenter.prop), excludes);
     }
   }
 

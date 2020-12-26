@@ -1,5 +1,4 @@
 import {BeruangTemplate} from './beruang-template.js';
-import {BeruangCoercer} from '../beruang-coercer.js';
 
 class BeruangTemplateSwitch extends BeruangTemplate(Object) {
   constructor() {
@@ -37,8 +36,7 @@ class BeruangTemplateSwitch extends BeruangTemplate(Object) {
     } else {
       val = term.vals[0];
     }
-    let coercer = new BeruangCoercer();
-    let show = coercer.coerce(Boolean, val);
+    let show = this.coercer.toBoolean(val);
     if(term.neg) {
       show = !show;
     }
