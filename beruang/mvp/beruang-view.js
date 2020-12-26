@@ -81,8 +81,12 @@ class extends base {
     let clones = [];
 
     props.forEach((p, i) => {
+      let nodes = this.propNodeMap[p];
+      if(!nodes) {
+        return;
+      }
       let val = this.presenter[p];
-      this.propNodeMap[p].forEach((node, i) => {
+      nodes.forEach((node, i) => {
         if(nodeExcludes.indexOf(node)>-1){
           return;
         }
@@ -140,8 +144,8 @@ class extends base {
       let excludes = nodeExcludes.concat(visitedNodes);
       clones.forEach((clone, i) => {
         this._parseNode(clone);
-        this.updateNode(props, excludes);
-        });
+        this.updateNode(Object.keys(this.presenter.prop), excludes);
+      });
     }
   }
 

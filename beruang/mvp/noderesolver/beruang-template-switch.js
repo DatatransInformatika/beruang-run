@@ -41,16 +41,18 @@ class BeruangTemplateSwitch extends BeruangTemplate(Object) {
     let show = coercer._toBoolean(val);
     coercer = null;
     if(show) {
-      let sibling = node.previousElementSibling;
       let clone = node.content.cloneNode(true);
+      let cs = clone.childNodes;
+      let count = cs ? cs.length : 0;
       node.parentNode.insertBefore(clone, node);
       node.clones = [];
-      let elstart = sibling ? sibling.nextElementSibling
-        : node.parentNode.firstElementChild;
-      let elrun = elstart;
-      while( elrun && elrun!==node ) {
-        node.clones.push(elrun);
-        elrun = elrun.nextElementSibling;
+      if(count>0) {
+        let el = node.previousSibling;
+        while(count>0 && el) {
+          count--;
+          node.clones.splice(0, 0, el);
+          el = el.previousSibling;
+        }
       }
     } else {
       if(node.clones) {
@@ -67,7 +69,7 @@ class BeruangTemplateSwitch extends BeruangTemplate(Object) {
     if(node.props) {
       node.props.forEach((prop, i) => {
         let arr = propNodeMap[prop];
-        if(arr ){
+        if(arr){
           let idx = arr.indexOf(node);
           if(idx>-1){
             propNodeMap[prop].splice(idx, 1);

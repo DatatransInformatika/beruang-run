@@ -27,18 +27,12 @@ class extends base {
         vc = module[clsName];
         this._viewClass[clsName] = vc;
         let t = document.createElement('template');
-        t.innerHTML = this._trim(vc.getTemplate());
+        t.innerHTML = vc.getTemplate();
         this._viewTmpl[clsName] = t;
         templateCallback(vc, t);
         delete this._viewWait[clsName];
       });
     }
-  }
-
-  static _trim(s) {
-    s = s.replace(/\s+</g, '<');
-    s = s.replace(/>\s+/g, '>');
-    return s;
   }
 
 //abstract:BEGIN
