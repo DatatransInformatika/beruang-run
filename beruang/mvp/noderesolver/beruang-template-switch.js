@@ -38,9 +38,7 @@ class BeruangTemplateSwitch extends BeruangTemplate(Object) {
       val = term.vals[0];
     }
     let coercer = new BeruangCoercer();
-    let show = coercer._toBoolean(val);
-    coercer = null;
-    if(show) {
+    if( coercer._toBoolean(val) ) {
       let clone = node.content.cloneNode(true);
       let cs = clone.childNodes;
       let count = cs ? cs.length : 0;
