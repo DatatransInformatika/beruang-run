@@ -14,23 +14,26 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     node.tmpl = {'fldItem':item, 'fldIdx':idx};
   }
 
-  _termedClones(node, nodes) {
+  _termedClones(templateNode, node, nodes) {
     if(node.terms) {
       nodes.push(node);
     }
     let n = node.firstChild;
     while(n) {
-      if(n.terms) {
-        nodes.push(n);
-      }
-      if(n.localName!=='template') {
-        this._termedClones(n, nodes);
+      let arrayTemplate = this._arrayTemplate(n);
+      if( arrayTemplate && arrayTemplate.node===templateNode) {
+        if(n.terms) {
+          nodes.push(n);
+        }
+        if(n.localName!=='template') {
+          this._termedClones(n, nodes);
+        }
       }
       n = n.nextSibling;
     }
   }
 
- _substitutedClone(rootPath, childNodes, val, pathmatch) {//recursive
+ _substitutedClone(templateNode, rootPath, childNodes, val, pathmatch) {
    let paths = pathmatch.split('.');
    if(paths.length<2) {
      return null;
@@ -43,7 +46,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
    idx = parseInt(idx, 10);
    childNodes.forEach((node, i) => {
      if(node.arrayTemplate && node.arrayTemplate.idx==idx){
-       this._termedClones(node, clones);
+       this._termedClones(templateNode, node, clones);
      }
    });
    if(clones.length==0) {
@@ -90,6 +93,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     if(pathmatch && p!=pathmatch) {
       if(node.clones && node.clones.length>0) {
         obj.clones = this._substitutedClone(
+          node,
           node.tmpl.fldItem, //rootPath
           node.clones, val,
           pathmatch);
