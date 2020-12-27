@@ -90,15 +90,19 @@ class extends base {
         val = null;
       }
 
-      let old = observer ? this[p] : null;
+      let old = this[p];
       this.prop[p] = val;
-      val = (observer || reflectToAttr) ? this[p] : null;
+      val = this[p];
+
+      if(val===old) {
+          return;
+      }
 
       if(this.view) {
         this._delayedUpdateNode(p);
       }
-
-      if(observer && val!=old) {
+      
+      if(observer){
         this[observer].apply(this, [val, old]);
       }
 
