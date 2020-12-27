@@ -177,18 +177,26 @@ class extends base {
     return {'term':term, 'props':props};
   }
 
-  substitute(node, p, val) {
+  substitute(node, p, val, pathmatch) {
+    let hit = false;
     node.terms.forEach((term, i) => {
-      let idx = term.args.indexOf(p);
-      if(idx > -1) {
-        let path = term.paths[idx];
-        val = this._objPathValue(val, path.split('.'));
-        if(term.negs[idx]) {
-          val = !this.coercer.toBoolean(val);
+      term.args.forEach((arg, j) => {
+        if(arg!=p) {
+          return;
         }
-        term.vals[idx] = val;
-      }
+        let path = term.paths[j];
+        if(pathmatch && pathmatch!=path) {
+          return;
+        }
+        let _val = this._objPathValue(val, path.split('.'));
+        if(term.negs[j]) {
+          _val = !this.coercer.toBoolean(_val);
+        }
+        term.vals[j] = _val;
+        hit = true;
+      });
     });
+    return hit;
   }
 
   _propNodeMap(map, prop, node) {

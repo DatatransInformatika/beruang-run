@@ -27,6 +27,7 @@ once more [[_large(123, label, ADUH)]]</b>
     <div>[[j]] [[p.name]]</div>
     <template data-tmpl-switch="show">cond [[address]] <div>conditional [[label]]</div></template>
     </template>
+    <div>[[student.subject]] [[student.mark]]</div>
     `;
   }
 

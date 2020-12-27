@@ -84,7 +84,7 @@ class extends base {
     }
   }
 
-  updateNode(props) {
+  updateNode(props, path/*may be null*/) {
     let affectedNodes = [];
 
     props.forEach((p, i) => {
@@ -96,16 +96,19 @@ class extends base {
       nodes.forEach((node, i) => {
         let hit = false;
         if(node.nodeType===3/*Text*/) {
-          this.textNode.substitute(node, p, val);
-          hit = true;
+          if(this.textNode.substitute(node, p, val, path)){
+            hit = true;
+          }
         } else if(node.nodeType==1/*Element*/) {
           if(node.localName==='template') {
             if( node.hasAttribute('data-tmpl-switch') ) {
-              this.tmplSwitch.substitute(node, p, val);
-              hit = true;
+              if(this.tmplSwitch.substitute(node, p, val, path)){
+                hit = true;
+              }
             } else if( node.hasAttribute('data-tmpl-array') ) {
-              this.tmplArray.substitute(node, p, val);
-              hit = true;
+              if(this.tmplArray.substitute(node, p, val, path)){
+                hit = true;
+              }
             }
           } else {
 
@@ -154,5 +157,5 @@ class extends base {
       this.solveNode(nodes);
     }
   }
-  
+
 }

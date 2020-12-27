@@ -15,22 +15,29 @@ class extends base {
     this._prop = obj;
   }
 
-  set(prop, val) {
-      let props = prop.split('.');
+  set(path, val) {
+      let arr = path.split('.');
+      let p0 = arr[0];
       let propKeys = Object.keys(this.prop);
-      let p0 = props[0];
       if(propKeys.indexOf(p0)==-1){
         return;
       }
-      if(props.length===1) {
-        this[p0]=val;
+      if(arr.length===1) {
+        this[p0] = val;
         return;
       }
-      
-      //to do
-      //find node from _propNodeMap
-      //decide if it is array or other
-
+      let obj = this.prop[p0];//this[p0];
+      if(typeof obj === 'function') {//convert function to object
+        obj = this[p0];
+        this.prop[p0] = obj;
+      }
+      let len = arr.length;
+      let fld = arr[len - 1];
+      for(let i=1; i<len-1; i++) {
+        obj = obj[arr[i]];
+      }
+      obj[fld] = val;
+      this.view.updateNode([p0], path);
   }
 
   get coercer() {
@@ -116,7 +123,7 @@ class extends base {
     }
     this._updateNodeXval = setTimeout(
       ()=>{
-          this.view.updateNode(this._updatedProps);
+          this.view.updateNode(this._updatedProps, null);
           this._updateNodeXval = null;
           this._updatedProps = null;
       }, 50);

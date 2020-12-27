@@ -43,6 +43,16 @@ class SamplePresenter extends BeruangPresenter(HTMLElement) {
           {'name':'Moni'}
         ]
       },
+
+      student: {
+        type:Object,
+        value:()=>{
+          return {
+            'subject':'Math',
+            'mark':'A'
+          }
+        }
+      }
     }
   }
 
