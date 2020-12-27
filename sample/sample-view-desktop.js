@@ -21,13 +21,17 @@ once more [[_large(123, label, ADUH)]]</b>
     <slot></slot>
     <template data-tmpl-switch="!show">cond [[address]] <div>conditional [[label]]</div></template>
     <template data-tmpl-array="simpleArray" data-tmpl-item="n" data-tmpl-index="i">
-    [[i]] [[n]]
+    <div>[[i]] [[n]] [[_plusTen(i)]]</div>
     </template>
     `;
   }
 
   _large(n, s, t) {
     return t + ' ' + n + ' ' + s.toUpperCase();
+  }
+
+  _plusTen(n) {
+    return n + 10;
   }
 
 }

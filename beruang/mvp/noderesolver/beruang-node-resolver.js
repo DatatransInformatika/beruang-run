@@ -32,26 +32,44 @@ class extends base {
     return val;
   }
 
+  _arrayTemplate(node) {
+    let tmplEl = node;
+    while(tmplEl) {
+      if(tmplEl.arrayTemplate){
+        return tmplEl.arrayTemplate;
+      }
+      tmplEl = tmplEl.parentNode;
+    }
+    return null;
+  }
+
+  _arrayValue(prop, arrTmpl, view) {
+    if(prop===arrTmpl.node.tmpl.fldIdx) {
+      return {'val':arrTmpl.idx};
+    } else {
+      let arr = prop.split('.');
+      if(arr[0]===arrTmpl.node.tmpl.fldItem) {
+        let arrObj = this.nodeValue(arrTmpl.node.terms[0], view);
+        let val = arrObj[arrTmpl.idx];//todo: parse obj.1.field
+        return {'val':val};
+      }
+    }
+    return null;
+  }
+
   tmplSimple(stmt, node, presenter, propNodeMap) {
     let prop  = stmt.trim();
-    if(node.arrayTemplate){
-        let t = node.arrayTemplate.template;
-        if(prop===t.tmpl.fldIdx) {
-          let term = {'stmt':stmt, 'fname':null, 'args':[prop], 'negs':[false],
-            'vals':[node.arrayTemplate.i], 'neg':false};
-          return {'term':term, 'props':[]};
-        } else {
-          let arr = prop.split('.');
-          if(arr[0]===t.tmpl.fldItem) {
-            let arrObj = this.nodeValue(t.terms[0], presenter.view);
-            //todo: parse obj.1.field
-            let val = arrObj[node.arrayTemplate.i];
-            let term = {'stmt':stmt, 'fname':null, 'args':[prop], 'negs':[false],
-              'vals':[val], 'neg':false};
-            return {'term':term, 'props':[]};
-          }
-        }
+
+    let arrTmpl = this._arrayTemplate(node);
+    if(arrTmpl){
+      let obj = this._arrayValue(prop, arrTmpl, presenter.view);
+      if(obj) {
+        let term = {'stmt':stmt, 'fname':null, 'args':[prop], 'negs':[false],
+          'vals':[obj.val], 'neg':false};
+        return {'term':term, 'props':[]};
+      }
     }
+
     let neg = prop.substring(0,1)==='!';
     if(neg){
       prop = prop.substring(1).trim();
@@ -70,6 +88,8 @@ class extends base {
     if(!arr || arr.length<2) {
       return null;
     }
+
+    let arrTmpl = this._arrayTemplate(node);
 
     let fname = arr[1];
     let neg = fname.substring(0,1)==='!';
@@ -90,7 +110,20 @@ class extends base {
           if(neg){
             prop = arg.substring(1).trim();
           }
-          if(presenter.prop.hasOwnProperty(prop)) {
+
+          let handled = false;
+          if(arrTmpl) {
+            let obj = this._arrayValue(prop, arrTmpl, presenter.view);
+            if(obj) {
+              term['args'].push(prop);
+              term['negs'].push(neg);
+              term['vals'].push(obj.val);
+              handled = true;
+            }
+          }
+
+          if(!handled) {
+            if(presenter.prop.hasOwnProperty(prop)) {
               term['args'].push(prop);
               term['negs'].push(neg);
               term['vals'].push(presenter[arg]);
@@ -101,6 +134,7 @@ class extends base {
               term['negs'].push(false);
               term['vals'].push(arg);
             }
+          }
         }
       });
     }

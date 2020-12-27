@@ -34,7 +34,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
       if(count>0) {
         let el = node.previousSibling;
         while(count>0 && el) {
-          el.arrayTemplate = {'i':i, 'template':node};
+          el.arrayTemplate = {'idx':i, 'node':node};
           count--;
           cloneArr.splice(0, 0, el);
           el = el.previousSibling;

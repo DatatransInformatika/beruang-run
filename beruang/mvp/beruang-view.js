@@ -151,8 +151,10 @@ class extends base {
         this._parseNode(clone, ns);
         nodes = nodes.concat(ns);
       });
-      this.solveNode(clones);
+      this.solveNode(nodes);
     }
   }
+
+
 
 }
