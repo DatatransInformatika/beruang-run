@@ -43,16 +43,16 @@ class extends base {
     return null;
   }
 
-  _arrayValue(prop, arrTmpl, view) {
-    if(prop===arrTmpl.node.tmpl.fldIdx) {
+  _arrayValue(path, arrTmpl, view) {
+    if(path===arrTmpl.node.tmpl.fldIdx) {
       return {'val':arrTmpl.idx};
     } else {
-      let arr = prop.split('.');
-      if(arr[0]===arrTmpl.node.tmpl.fldItem) {
-        let arrObj = this.nodeValue(arrTmpl.node.terms[0], view);
-        let val = arrObj[arrTmpl.idx];
-        for(let i=1;i<arr.length;i++) {
-          val = val[arr[i]];
+      let pathArr = path.split('.');
+      if(pathArr[0]===arrTmpl.node.tmpl.fldItem) {
+        let arr = this.nodeValue(arrTmpl.node.terms[0], view);
+        let val = arr[arrTmpl.idx];
+        for(let i=1;i<pathArr.length;i++) {
+          val = val[pathArr[i]];
         }
         return {'val':val};
       }
@@ -60,28 +60,53 @@ class extends base {
     return null;
   }
 
+  _objPathValue(obj, pathArr) {
+    for(let i=1;i<pathArr.length;i++) {
+      obj = obj[pathArr[i]];
+    }
+    return obj;
+  }
+
   tmplSimple(stmt, node, presenter, propNodeMap) {
-    let prop  = stmt.trim();
+    let path  = stmt.trim();
 
     let arrTmpl = this._arrayTemplate(node);
     if(arrTmpl){
-      let obj = this._arrayValue(prop, arrTmpl, presenter.view);
+      let obj = this._arrayValue(path, arrTmpl, presenter.view);
       if(obj) {
-        let term = {'stmt':stmt, 'fname':null, 'args':[prop], 'negs':[false],
-          'vals':[obj.val], 'neg':false};
+        let term = {
+          'stmt':stmt,
+          'fname':null,
+          'neg':false,
+          'args':[path],
+          'paths':[path],
+          'negs':[false],
+          'vals':[obj.val]
+        };
         return {'term':term, 'props':[]};
       }
     }
 
-    let neg = prop.substring(0,1)==='!';
+    let neg = path.substring(0,1)==='!';
     if(neg){
-      prop = prop.substring(1).trim();
+      path = path.substring(1).trim();
     }
-    if(presenter.prop.hasOwnProperty(prop)) {
-      let term = {'stmt':stmt, 'fname':null, 'args':[prop], 'negs':[neg],
-        'vals':[presenter[prop]], 'neg':neg};
-      this._propNodeMap(propNodeMap, prop, node);
-      return {'term':term, 'props':[prop]};
+    let pathArr = path.split('.');
+    let p0 = pathArr[0];
+
+    if(presenter.prop.hasOwnProperty(p0)) {
+      let val = this._objPathValue(presenter[p0], pathArr);
+      let term = {
+        'stmt':stmt,
+        'fname':null,
+        'neg':neg,
+        'args':[p0],
+        'paths':[path],
+        'negs':[neg],
+        'vals':[val]
+      };
+      this._propNodeMap(propNodeMap, p0, node);
+      return {'term':term, 'props':[p0]};
     }
     return null;
   }
@@ -100,44 +125,52 @@ class extends base {
       fname = fname.substring(1).trim();
     }
 
-    let term = {'stmt':stmt, 'fname':fname, 'args':[], 'negs':[], 'vals':[],
-      'neg':neg};
+    let term = {
+      'stmt':stmt,
+      'fname':fname,
+      'neg':neg,
+      'args':[],
+      'paths':[],
+      'negs':[],
+      'vals':[]};
     let props = [];
     let sarg = arr.length>2 ? arr[2] : null;
     if(sarg) {
-      sarg.split(',').forEach((arg, i) => {
-        arg = arg.trim();
-        if(arg.length>0) {
-          let prop = arg;
-          let neg = arg.substring(0,1)==='!';
-          if(neg){
-            prop = arg.substring(1).trim();
-          }
+      sarg.split(',').forEach((path, i) => {
+        path = path.trim();
+        if(path.length<1) {
+          return;
+        }
 
-          let handled = false;
-          if(arrTmpl) {
-            let obj = this._arrayValue(prop, arrTmpl, presenter.view);
-            if(obj) {
-              term['args'].push(prop);
-              term['negs'].push(neg);
-              term['vals'].push(obj.val);
-              handled = true;
-            }
-          }
+        let neg = path.substring(0,1)==='!';
+        if(neg){
+          path = path.substring(1).trim();
+        }
 
-          if(!handled) {
-            if(presenter.prop.hasOwnProperty(prop)) {
-              term['args'].push(prop);
-              term['negs'].push(neg);
-              term['vals'].push(presenter[arg]);
-              this._propNodeMap(propNodeMap, arg, node);
-              props.push(arg);
-            } else {
-              term['args'].push(arg);
-              term['negs'].push(false);
-              term['vals'].push(arg);
-            }
+        if(arrTmpl) {
+          let obj = this._arrayValue(path, arrTmpl, presenter.view);
+          if(obj) {
+            term['args'].push(path);
+            term['paths'].push(path),
+            term['negs'].push(neg);
+            term['vals'].push(obj.val);
+            return;
           }
+        }
+
+        let pathArr = path.split('.');
+        let p0 = pathArr[0];
+        term['args'].push(p0);
+        term['paths'].push(path);
+        if(presenter.prop.hasOwnProperty(p0)) {
+            let val = this._objPathValue(presenter[p0], pathArr);
+            term['negs'].push(neg);
+            term['vals'].push(val);
+            this._propNodeMap(propNodeMap, p0, node);
+            props.push(p0);
+        } else {
+            term['negs'].push(false);
+            term['vals'].push(p0);
         }
       });
     }
@@ -148,6 +181,8 @@ class extends base {
     node.terms.forEach((term, i) => {
       let idx = term.args.indexOf(p);
       if(idx > -1) {
+        let path = term.paths[idx];
+        val = this._objPathValue(val, path.split('.'));
         if(term.negs[idx]) {
           val = !this.coercer.toBoolean(val);
         }

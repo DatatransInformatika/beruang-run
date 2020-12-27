@@ -15,6 +15,24 @@ class extends base {
     this._prop = obj;
   }
 
+  set(prop, val) {
+      let props = prop.split('.');
+      let propKeys = Object.keys(this.prop);
+      let p0 = props[0];
+      if(propKeys.indexOf(p0)==-1){
+        return;
+      }
+      if(props.length===1) {
+        this[p0]=val;
+        return;
+      }
+      
+      //to do
+      //find node from _propNodeMap
+      //decide if it is array or other
+
+  }
+
   get coercer() {
     if(!this._coercer) {
       this._coercer = new BeruangCoercer();

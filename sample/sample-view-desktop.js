@@ -25,6 +25,7 @@ once more [[_large(123, label, ADUH)]]</b>
     </template>
     <template data-tmpl-array="personArray" data-tmpl-item="p" data-tmpl-index="j">
     <div>[[j]] [[p.name]]</div>
+    <template data-tmpl-switch="show">cond [[address]] <div>conditional [[label]]</div></template>
     </template>
     `;
   }
