@@ -106,7 +106,15 @@ class extends base {
                 hit = true;
               }
             } else if( node.hasAttribute('data-tmpl-array') ) {
-              if(this.tmplArray.substitute(node, p, val, path)){
+              let obj = this.tmplArray.arraySubstitute(node, p, val, path);
+              if(obj.clones) {
+                obj.clones.forEach((clone, i) => {
+                  if(affectedNodes.indexOf(clone)==-1) {
+                    affectedNodes.push(clone);
+                  }
+                });
+              }
+              if(obj.hit) {
                 hit = true;
               }
             }

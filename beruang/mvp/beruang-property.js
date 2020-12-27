@@ -26,18 +26,24 @@ class extends base {
         this[p0] = val;
         return;
       }
-      let obj = this.prop[p0];//this[p0];
-      if(typeof obj === 'function') {//convert function to object
+      let obj = this.prop[p0];
+      if(typeof obj === 'function') {//materialize function
         obj = this[p0];
         this.prop[p0] = obj;
       }
-      let len = arr.length;
-      let fld = arr[len - 1];
-      for(let i=1; i<len-1; i++) {
-        obj = obj[arr[i]];
+      let lastIdx = arr.length - 1;
+      let fld = arr[lastIdx];
+      for(let i=1; obj && i<lastIdx; i++) {
+        if(obj.hasOwnProperty(arr[i])) {
+          obj = obj[arr[i]];
+        } else {
+          obj = null;
+        }
       }
-      obj[fld] = val;
-      this.view.updateNode([p0], path);
+      if(obj) {
+        obj[fld] = val;
+        this.view.updateNode([p0], path);
+      }
   }
 
   get coercer() {
