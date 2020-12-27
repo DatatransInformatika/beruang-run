@@ -6,36 +6,9 @@ class BeruangTemplateSwitch extends BeruangTemplate(Object) {
   }
 
   /*override parent abstract method*/
-  parse(node, presenter, propNodeMap) {
-    let stmt = node.getAttribute('data-tmpl-switch') || '';
-    stmt = stmt.toString();
-    if(stmt.length<1){
-      return;
-    }
-    if(node.terms && this.termExists(node.terms, stmt)){
-      return;
-    }
-    let obj = this.tmplSimple(stmt, node, presenter, propNodeMap)
-      || this.tmplFunc(stmt, node, presenter, propNodeMap);
-    if(obj) {
-      if(!node.terms) {
-        node.terms = [];
-        node.props = [];
-      }
-      node.terms.push(obj.term);
-      node.props = node.props.concat(obj.props);
-    }
-  }
-
-  /*override parent abstract method*/
   solve(view, node, propNodeMap) {
     let term = node.terms[0];
-    let val = null;
-    if(term.fname) {
-      val = view[term.fname].apply(view, term.vals);
-    } else {
-      val = term.vals[0];
-    }
+    let val = this.nodeValue(term, view);
     let show = this.coercer.toBoolean(val);
     if(term.neg) {
       show = !show;
@@ -82,6 +55,11 @@ class BeruangTemplateSwitch extends BeruangTemplate(Object) {
       this._removePropNode(el, propNodeMap);
       el = el.nextSibling;
     }
+  }
+
+  /*override parent abstract method*/
+  stmtAttribute() {
+    return 'data-tmpl-switch';
   }
 }
 

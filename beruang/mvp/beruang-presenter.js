@@ -19,8 +19,9 @@ class extends BeruangProperty(base) {
       this.view.presenter = this;
       let shadowRoot = this.attachShadow({mode: 'open'});
       shadowRoot.appendChild(tmpl.content.cloneNode(true));
-      this.view.parseTemplate(shadowRoot);
-      this.view.updateNode(Object.keys(this.view.propNodeMap), []);
+      let nodes = [];
+      this.view.parseTemplate(shadowRoot, nodes);
+      this.view.solveNode(nodes);
     });
   }
 

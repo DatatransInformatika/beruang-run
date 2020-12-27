@@ -41,6 +41,13 @@ class extends base {
     return this._tmplSwitch;
   }
 
+  get tmplArray() {
+    if(!this._tmplArray) {
+      this._tmplArray = new BeruangTemplateArray();
+    }
+    return this._tmplArray;
+  }
+
   get element() {
     if(!this._element) {
       this._element = new BeruangElement();
@@ -48,13 +55,13 @@ class extends base {
     return this._element;
   }
 
-  parseTemplate(root) {
+  parseTemplate(root, nodes) {
     root.childNodes.forEach((node, i) => {
-      this._parseNode(node);
+      this._parseNode(node, nodes);
     });
   }
 
-  _parseNode(node) {
+  _parseNode(node, nodes) {
     if(node.localName==='style') {
       //parse style here
     } else {
@@ -65,20 +72,20 @@ class extends base {
           if( node.hasAttribute('data-tmpl-switch') ) {
             this.tmplSwitch.parse(node, this.presenter, this.propNodeMap);
           } else if( node.hasAttribute('data-tmpl-array') ) {
-
+            this.tmplArray.parse(node, this.presenter, this.propNodeMap);
           }
         } else {
-          //this.element.parse(....);
-          this.parseTemplate(node);//recursive
+          this.parseTemplate(node, nodes);//recursive
         }
+      }
+      if(node.terms) {
+        nodes.push(node);
       }
     }
   }
 
-  updateNode(props, nodeExcludes) {
-    let visitedNodes = [];
+  updateNode(props) {
     let affectedNodes = [];
-    let clones = [];
 
     props.forEach((p, i) => {
       let nodes = this.propNodeMap[p];
@@ -87,31 +94,23 @@ class extends base {
       }
       let val = this.presenter[p];
       nodes.forEach((node, i) => {
-        if(nodeExcludes.indexOf(node)>-1){
-          return;
-        }
         let hit = false;
         if(node.nodeType===3/*Text*/) {
           this.textNode.substitute(node, p, val);
           hit = true;
         } else if(node.nodeType==1/*Element*/) {
-          //this.element.substitute(node, p, val);
           if(node.localName==='template') {
             if( node.hasAttribute('data-tmpl-switch') ) {
               this.tmplSwitch.substitute(node, p, val);
               hit = true;
             } else if( node.hasAttribute('data-tmpl-array') ) {
-
+              this.tmplArray.substitute(node, p, val);
+              hit = true;
             }
           } else {
 
           }
         }
-
-        if(visitedNodes.indexOf(node)==-1) {
-          visitedNodes.push(node);
-        }
-
         if(hit) {
           if(affectedNodes.indexOf(node)==-1){
             affectedNodes.push(node);
@@ -120,16 +119,21 @@ class extends base {
       });
     });
 
-    affectedNodes.forEach((node, i) => {
+    this.solveNode(affectedNodes);
+  }
+
+  solveNode(nodes) {
+    let clones = [];
+
+    nodes.forEach((node, i) => {
       if(node.nodeType===3/*Text*/) {
         this.textNode.solve(this, node, this.propNodeMap);
       } else if(node.nodeType==1/*Element*/) {
-        //this.element.solve(this, node);
         if(node.localName==='template') {
           if( node.hasAttribute('data-tmpl-switch') ) {
             this.tmplSwitch.solve(this, node, this.propNodeMap);
           } else if( node.hasAttribute('data-tmpl-array') ) {
-
+            this.tmplArray.solve(this, node, this.propNodeMap);
           }
           if(node.clones) {
             clones = clones.concat(node.clones);
@@ -141,11 +145,13 @@ class extends base {
     });
 
     if(clones.length>0) {
-      let excludes = nodeExcludes.concat(visitedNodes);
+      let nodes = [];
       clones.forEach((clone, i) => {
-        this._parseNode(clone);        
+        let ns = [];
+        this._parseNode(clone, ns);
+        nodes = nodes.concat(ns);
       });
-      this.updateNode(Object.keys(this.presenter.prop), excludes);
+      this.solveNode(clones);
     }
   }
 

@@ -20,6 +20,9 @@ Desktop [[_large (123, label, ADUH)]] at [[address]]
 once more [[_large(123, label, ADUH)]]</b>
     <slot></slot>
     <template data-tmpl-switch="!show">cond [[address]] <div>conditional [[label]]</div></template>
+    <template data-tmpl-array="simpleArray" data-tmpl-item="n" data-tmpl-index="i">
+    [[i]] [[n]]
+    </template>
     `;
   }
 

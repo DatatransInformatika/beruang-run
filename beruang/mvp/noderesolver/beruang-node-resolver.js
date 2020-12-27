@@ -22,8 +22,36 @@ class extends base {
     return false;
   }
 
+  nodeValue(term, view) {
+    let val = null;
+    if(term.fname) {
+      val = view[term.fname].apply(view, term.vals);
+    } else {
+      val = term.vals[0];
+    }
+    return val;
+  }
+
   tmplSimple(stmt, node, presenter, propNodeMap) {
     let prop  = stmt.trim();
+    if(node.arrayTemplate){
+        let t = node.arrayTemplate.template;
+        if(prop===t.tmpl.fldIdx) {
+          let term = {'stmt':stmt, 'fname':null, 'args':[prop], 'negs':[false],
+            'vals':[node.arrayTemplate.i], 'neg':false};
+          return {'term':term, 'props':[]};
+        } else {
+          let arr = prop.split('.');
+          if(arr[0]===t.tmpl.fldItem) {
+            let arrObj = this.nodeValue(t.terms[0], presenter.view);
+            //todo: parse obj.1.field
+            let val = arrObj[node.arrayTemplate.i];
+            let term = {'stmt':stmt, 'fname':null, 'args':[prop], 'negs':[false],
+              'vals':[val], 'neg':false};
+            return {'term':term, 'props':[]};
+          }
+        }
+    }
     let neg = prop.substring(0,1)==='!';
     if(neg){
       prop = prop.substring(1).trim();

@@ -98,7 +98,7 @@ class extends base {
     }
     this._updateNodeXval = setTimeout(
       ()=>{
-          this.view.updateNode(this._updatedProps, []);
+          this.view.updateNode(this._updatedProps);
           this._updateNodeXval = null;
           this._updatedProps = null;
       }, 50);

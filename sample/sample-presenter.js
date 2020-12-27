@@ -28,6 +28,11 @@ class SamplePresenter extends BeruangPresenter(HTMLElement) {
       show: {
         type:Boolean,
         value:false
+      },
+
+      simpleArray: {
+        type:Array,
+        value:()=>[1,2,3]
       }
     }
   }
