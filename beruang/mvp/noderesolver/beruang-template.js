@@ -26,6 +26,25 @@ class extends BeruangNodeResolver(base) {
     }
   }
 
+  removePropNode(node, propNodeMap) {
+    if(node.props) {
+      node.props.forEach((prop, i) => {
+        let arr = propNodeMap[prop];
+        if(arr){
+          let idx = arr.indexOf(node);
+          if(idx>-1){
+            propNodeMap[prop].splice(idx, 1);
+          }
+        }
+      });
+    }
+    let el = node.firstChild;
+    while(el) {
+      this.removePropNode(el, propNodeMap);
+      el = el.nextSibling;
+    }
+  }
+
 //abstract:BEGIN
   stmtAttribute() {
     throw new Error('BeruangTemplate: you have to call stmtAttribute method ' +

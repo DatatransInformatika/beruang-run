@@ -30,30 +30,11 @@ class BeruangTemplateSwitch extends BeruangTemplate(Object) {
     } else {
       if(node.clones) {
         node.clones.forEach((clone, i) => {
-          this._removePropNode(clone, propNodeMap);
+          this.removePropNode(clone, propNodeMap);
           clone.parentNode.removeChild(clone);
         });
         node.clones = null;
       }
-    }
-  }
-
-  _removePropNode(node, propNodeMap) {
-    if(node.props) {
-      node.props.forEach((prop, i) => {
-        let arr = propNodeMap[prop];
-        if(arr){
-          let idx = arr.indexOf(node);
-          if(idx>-1){
-            propNodeMap[prop].splice(idx, 1);
-          }
-        }
-      });
-    }
-    let el = node.firstChild;
-    while(el) {
-      this._removePropNode(el, propNodeMap);
-      el = el.nextSibling;
     }
   }
 

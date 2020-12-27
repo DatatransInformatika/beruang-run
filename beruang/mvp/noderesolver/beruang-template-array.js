@@ -24,6 +24,15 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     if(val.constructor.name!=='Array'){
       val = this.coercer.toArray(val);
     }
+
+    if(node.clones) {
+      node.clones.forEach((clone, i) => {
+        this.removePropNode(clone, propNodeMap);
+        clone.parentNode.removeChild(clone);
+      });
+      node.clones = null;
+    }
+
     node.clones = [];
     val.forEach((item, i) => {
       let clone = node.content.cloneNode(true);

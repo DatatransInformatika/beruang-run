@@ -33,7 +33,16 @@ class SamplePresenter extends BeruangPresenter(HTMLElement) {
       simpleArray: {
         type:Array,
         value:()=>[1,2,3]
-      }
+      },
+
+      personArray: {
+        type:Array,
+        value:()=>[
+          {'name':'Abdul'},
+          {'name':'Cicit'},
+          {'name':'Moni'}
+        ]
+      },
     }
   }
 

@@ -50,7 +50,10 @@ class extends base {
       let arr = prop.split('.');
       if(arr[0]===arrTmpl.node.tmpl.fldItem) {
         let arrObj = this.nodeValue(arrTmpl.node.terms[0], view);
-        let val = arrObj[arrTmpl.idx];//todo: parse obj.1.field
+        let val = arrObj[arrTmpl.idx];
+        for(let i=1;i<arr.length;i++) {
+          val = val[arr[i]];
+        }
         return {'val':val};
       }
     }

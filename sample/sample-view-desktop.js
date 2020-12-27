@@ -23,6 +23,9 @@ once more [[_large(123, label, ADUH)]]</b>
     <template data-tmpl-array="simpleArray" data-tmpl-item="n" data-tmpl-index="i">
     <div>[[i]] [[n]] [[_plusTen(i)]]</div>
     </template>
+    <template data-tmpl-array="personArray" data-tmpl-item="p" data-tmpl-index="j">
+    <div>[[j]] [[p.name]]</div>
+    </template>
     `;
   }
 
