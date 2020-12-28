@@ -29,10 +29,7 @@ class BeruangTemplateSwitch extends BeruangTemplate(Object) {
       }
     } else {
       if(node.clones) {
-        node.clones.forEach((clone, i) => {
-          this.removePropNode(clone, propNodeMap);
-          clone.parentNode.removeChild(clone);
-        });
+        this.removeClones(node.clones, propNodeMap);
         node.clones = null;
       }
     }
