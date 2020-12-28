@@ -14,32 +14,28 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     node.tmpl = {'fldItem':item, 'fldIdx':idx};
   }
 
-  _termedClones(templateNode, node, nodes, arrayTmplClones) {
-    if(node.terms) {
-      nodes.push(node);
-      if( node.localName==='template' &&
-        node.hasAttribute(this.constructor.stmtAttribute()) )
+  _termedClones(templateNode, arrTemplateIdx, nodes,
+    termedNodes, arrayTmplClones)
+  {
+    nodes.forEach((node, i) => {
+      let arrayTemplate = this._arrayTemplate(node);
+      if(arrayTemplate && arrayTemplate.node===templateNode
+        && arrayTemplate.idx==arrTemplateIdx)
       {
-        arrayTmplClones.push(node);
-      }
-    }
-    let n = node.firstChild;
-    while(n) {
-      let arrayTemplate = this._arrayTemplate(n);
-      if( arrayTemplate && arrayTemplate.node===templateNode ) {
-        if(n.terms) {
-          nodes.push(n);
-        }
-        if( n.localName==='template' ) {
-          if( n.hasAttribute(this.constructor.stmtAttribute()) ) {
-            arrayTmplClones.push(n);
+        if(node.terms) {
+          termedNodes.push(node);
+          if( node.localName==='template' &&
+            node.hasAttribute(this.constructor.stmtAttribute()) )
+          {
+            arrayTmplClones.push(node);
           }
-        } else {
-          this._termedClones(templateNode, n, nodes, arrayTmplClones);
         }
       }
-      n = n.nextSibling;
-    }
+      if(node.childNodes && node.childNodes.length>0) {
+        this._termedClones(templateNode, arrTemplateIdx, node.childNodes,
+          termedNodes, arrayTmplClones);
+      }
+    });
   }
 
  _substitutedClone(templateNode, val, paths, startPathIdx) {
@@ -51,15 +47,13 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
    if(isNaN(idx)) {
      return null;
    }
-   let cloneNodes = templateNode.clones;
+
    let clones = [];
    let arrayTmplClones = [];
    idx = parseInt(idx, 10);
-   cloneNodes.forEach((node, i) => {
-     if(node.arrayTemplate && node.arrayTemplate.idx==idx){
-       this._termedClones(templateNode, node, clones, arrayTmplClones);
-     }
-   });
+   this._termedClones(templateNode, idx, templateNode.clones,
+     clones, arrayTmplClones);
+
    if(clones.length==0) {
      return null;
    }
@@ -92,7 +86,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
      arrayTmplClones.forEach((arrayClone, j) => {
        if(arrayClone.getAttribute(this.constructor.stmtAttribute())===spath) {
          let arr = this._substitutedClone(arrayClone, _val, paths, pathIdx);
-         if( arr && arr.length>1 ) {
+         if( arr && arr.length>0 ) {
            cloneArr = cloneArr.concat(arr);
          }
        }
