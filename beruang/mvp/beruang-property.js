@@ -26,11 +26,7 @@ class extends base {
         this[p0] = val;
         return;
       }
-      let obj = this.prop[p0];
-      if(typeof obj === 'function') {//materialize function
-        obj = this[p0];
-        this.prop[p0] = obj;
-      }
+      let obj = this[p0];
       let lastIdx = arr.length - 1;
       let fld = arr[lastIdx];
       for(let i=1; obj && i<lastIdx; i++) {
@@ -68,19 +64,17 @@ class extends base {
           { get:this._getter(p, v.type),
             set:this._setter(p, v.type, v.observer, v.reflectToAttribute)
           });
-        this[p] = v.value;
+        if(typeof v.value === 'function') {
+          v.value = v.value();
+        }
+        this[p] = this.coercer.coerce(v.type, v.value);
       }
     }
   }
 
   _getter(p, vt) {
     return ()=>{
-      let val = this.prop[p];
-      if( typeof val==='function' ){
-        val = val ? val() : null;
-        val = this.coercer.coerce(vt, val);
-      }
-      return val;
+      return this.prop[p];
     };
   }
 
