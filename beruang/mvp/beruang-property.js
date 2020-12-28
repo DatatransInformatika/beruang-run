@@ -101,7 +101,7 @@ class extends base {
       if(this.view) {
         this._delayedUpdateNode(p);
       }
-      
+
       if(observer){
         this[observer].apply(this, [val, old]);
       }

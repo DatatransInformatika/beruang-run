@@ -69,9 +69,9 @@ class extends base {
         this.textNode.parse(node, this.presenter, this.propNodeMap);
       } else if(node.nodeType==1/*Element*/) {
         if(node.localName==='template') {
-          if( node.hasAttribute('data-tmpl-switch') ) {
+          if( node.hasAttribute(BeruangTemplateSwitch.stmtAttribute()) ) {
             this.tmplSwitch.parse(node, this.presenter, this.propNodeMap);
-          } else if( node.hasAttribute('data-tmpl-array') ) {
+          } else if( node.hasAttribute(BeruangTemplateArray.stmtAttribute()) ) {
             this.tmplArray.parse(node, this.presenter, this.propNodeMap);
           }
         } else {
@@ -101,11 +101,12 @@ class extends base {
           }
         } else if(node.nodeType==1/*Element*/) {
           if(node.localName==='template') {
-            if( node.hasAttribute('data-tmpl-switch') ) {
+            if( node.hasAttribute(BeruangTemplateSwitch.stmtAttribute()) ) {
               if(this.tmplSwitch.substitute(node, p, val, path)){
                 hit = true;
               }
-            } else if( node.hasAttribute('data-tmpl-array') ) {
+            } else if( node.hasAttribute(
+                BeruangTemplateArray.stmtAttribute()) ){
               let obj = this.tmplArray.arraySubstitute(node, p, val, path);
               if(obj.clones) {
                 obj.clones.forEach((clone, i) => {
@@ -141,9 +142,9 @@ class extends base {
         this.textNode.solve(this, node, this.propNodeMap);
       } else if(node.nodeType==1/*Element*/) {
         if(node.localName==='template') {
-          if( node.hasAttribute('data-tmpl-switch') ) {
+          if( node.hasAttribute(BeruangTemplateSwitch.stmtAttribute()) ) {
             this.tmplSwitch.solve(this, node, this.propNodeMap);
-          } else if( node.hasAttribute('data-tmpl-array') ) {
+          } else if( node.hasAttribute(BeruangTemplateArray.stmtAttribute()) ) {
             this.tmplArray.solve(this, node, this.propNodeMap);
           }
           if(node.clones) {

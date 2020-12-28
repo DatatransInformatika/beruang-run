@@ -52,6 +52,15 @@ class SamplePresenter extends BeruangPresenter(HTMLElement) {
             'mark':'A'
           }
         }
+      },
+
+      nestedArray: {
+        type:Array,
+        value:()=>[
+          {'label':'A', 'sub':[{'sub1':'A-Sub1','sub2':'A-Sub2'}]},
+          {'label':'B', 'sub':[{'sub1':'B-Sub1','sub2':'B-Sub2'}]},
+          {'label':'C', 'sub':[{'sub1':'C-Sub1','sub2':'C-Sub2'}]}
+        ]
       }
     }
   }

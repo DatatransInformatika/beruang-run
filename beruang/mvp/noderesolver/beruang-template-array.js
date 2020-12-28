@@ -14,52 +14,68 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     node.tmpl = {'fldItem':item, 'fldIdx':idx};
   }
 
-  _termedClones(templateNode, node, nodes) {
+  _termedClones(templateNode, node, nodes, arrayTmplClones) {
     if(node.terms) {
       nodes.push(node);
+      if( node.localName==='template' &&
+        node.hasAttribute(this.constructor.stmtAttribute()) )
+      {
+        arrayTmplClones.push(node);
+      }
     }
     let n = node.firstChild;
     while(n) {
       let arrayTemplate = this._arrayTemplate(n);
-      if( arrayTemplate && arrayTemplate.node===templateNode) {
+      if( arrayTemplate && arrayTemplate.node===templateNode ) {
         if(n.terms) {
           nodes.push(n);
         }
-        if(n.localName!=='template') {
-          this._termedClones(n, nodes);
+        if( n.localName==='template' ) {
+          if( n.hasAttribute(this.constructor.stmtAttribute()) ) {
+            arrayTmplClones.push(n);
+          }
+        } else {
+          this._termedClones(templateNode, n, nodes, arrayTmplClones);
         }
       }
       n = n.nextSibling;
     }
   }
 
- _substitutedClone(templateNode, rootPath, childNodes, val, pathmatch) {
-   let paths = pathmatch.split('.');
-   if(paths.length<2) {
+ _substitutedClone(templateNode, val, paths, startPathIdx) {
+   let pathIdx = startPathIdx;
+   if( paths.length < (pathIdx+1) ) {
      return null;
    }
-   let idx = paths[1];//must be array index
+   let idx = paths[pathIdx];//must be array index
    if(isNaN(idx)) {
      return null;
    }
+   let cloneNodes = templateNode.clones;
    let clones = [];
+   let arrayTmplClones = [];
    idx = parseInt(idx, 10);
-   childNodes.forEach((node, i) => {
+   cloneNodes.forEach((node, i) => {
      if(node.arrayTemplate && node.arrayTemplate.idx==idx){
-       this._termedClones(templateNode, node, clones);
+       this._termedClones(templateNode, node, clones, arrayTmplClones);
      }
    });
    if(clones.length==0) {
      return null;
    }
-   let spath = rootPath;
+   let spath = templateNode.tmpl.fldItem;/*rootPath*/
    let _val = val[idx];
    if(!_val) {
      return null;
    }
-   for(let i=2, len=paths.length; i<len; i++) {
-     let field = paths[i];
+
+   pathIdx++;
+   for(; pathIdx<paths.length; pathIdx++) {
+     let field = paths[pathIdx];
      if(!isNaN(field)) {
+       if( !(_val && _val.constructor.name==='Array') ) {
+         return null;
+       }
        break;
      } else {
        spath = spath + '.' + field;
@@ -69,8 +85,19 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
        _val = _val[field];
      }
    }
-   if(spath==rootPath) {
+   if(spath==templateNode.tmpl.fldItem) {
      return null;
+   } else if(pathIdx<paths.length) {//recursive
+     let cloneArr = [];
+     arrayTmplClones.forEach((arrayClone, j) => {
+       if(arrayClone.getAttribute(this.constructor.stmtAttribute())===spath) {
+         let arr = this._substitutedClone(arrayClone, _val, paths, pathIdx);
+         if( arr && arr.length>1 ) {
+           cloneArr = cloneArr.concat(arr);
+         }
+       }
+     });
+     return cloneArr;
    } else {
      let cloneArr = [];
      clones.forEach((clone, i) => {
@@ -92,11 +119,8 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     let obj = {'clones':null, 'hit':false};
     if(pathmatch && p!=pathmatch) {
       if(node.clones && node.clones.length>0) {
-        obj.clones = this._substitutedClone(
-          node,
-          node.tmpl.fldItem, //rootPath
-          node.clones, val,
-          pathmatch);
+        let paths = pathmatch.split('.');
+        obj.clones = this._substitutedClone(node, val, paths, 1);
       }
     } else {
       obj.hit = super.substitute(node, p, val, pathmatch);
@@ -144,7 +168,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
   }
 
   /*override parent abstract method*/
-  stmtAttribute() {
+  static stmtAttribute() {
     return 'data-tmpl-array';
   }
 

@@ -24,10 +24,16 @@ once more [[_large(123, label, ADUH)]]</b>
     <div>[[i]] [[n]] [[_plusTen(i)]]</div>
     </template>
     <template data-tmpl-array="personArray" data-tmpl-item="p" data-tmpl-index="j">
-    <div>[[j]] [[p.name]]</div>
-    <template data-tmpl-switch="show">cond [[address]] <div>conditional [[label]]</div></template>
+      <div>[[j]] [[p.name]]</div>
+      <template data-tmpl-switch="show">cond [[address]] <div>conditional [[label]]</div></template>
     </template>
     <div>[[student.subject]] [[student.mark]]</div>
+    <template data-tmpl-array="nestedArray" data-tmpl-item="p" data-tmpl-index="j">
+      <div>[[j]] [[p.label]]</div>
+      <template data-tmpl-array="p.sub" data-tmpl-item="q" data-tmpl-index="k">
+        <div>[[k]] [[q.sub1]] [[q.sub2]]</div>
+      </template>
+    </template>
     `;
   }
 
