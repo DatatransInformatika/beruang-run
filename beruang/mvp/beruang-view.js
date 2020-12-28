@@ -156,6 +156,16 @@ class extends base {
       }
     });
 
+    this._solveClones(clones);
+  }
+
+  arrayPush(prop, startIdx, count, arr) {
+    let clones = this.tmplArray.push(prop, startIdx, count, arr,
+      this.propNodeMap);
+    this._solveClones(clones);
+  }
+
+  _solveClones(clones) {
     if(clones.length>0) {
       let nodes = [];
       clones.forEach((clone, i) => {

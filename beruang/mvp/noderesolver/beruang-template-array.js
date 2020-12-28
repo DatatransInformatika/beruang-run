@@ -53,7 +53,6 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
    idx = parseInt(idx, 10);
    this._termedClones(templateNode, idx, templateNode.clones,
      clones, arrayTmplClones);
-
    if(clones.length==0) {
      return null;
    }
@@ -79,9 +78,8 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
        _val = _val[field];
      }
    }
-   if(spath==templateNode.tmpl.fldItem) {
-     return null;
-   } else if(pathIdx<paths.length) {//recursive
+
+  if(pathIdx<paths.length) {//recursive
      let cloneArr = [];
      arrayTmplClones.forEach((arrayClone, j) => {
        if(arrayClone.getAttribute(this.constructor.stmtAttribute())===spath) {
@@ -122,6 +120,23 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     return obj;
   }
 
+  push(prop, startIdx, count, arr, propNodeMap) {
+    let clones = [];
+    let nodes = propNodeMap[prop];
+    if(!(nodes && nodes.length>0)){
+      return;
+    }
+    nodes.forEach((node, i) => {
+      if(!node.hasAttribute(this.constructor.stmtAttribute())){
+        return;
+      }
+      for(let i=startIdx, stop=startIdx+count; i<stop; i++) {
+        this._populate(node, i, clones);
+      }
+    });
+    return clones;
+  }
+
   /*override parent abstract method*/
   solve(view, node, propNodeMap) {
     let term = node.terms[0];
@@ -135,32 +150,38 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
 
     if(node.clones) {
       this.removeClones(node.clones, propNodeMap);
-      node.clones = null;
     }
 
     node.clones = [];
     val.forEach((item, i) => {
-      let clone = node.content.cloneNode(true);
-      let cs = clone.childNodes;
-      let count = cs ? cs.length : 0;
-      node.parentNode.insertBefore(clone, node);
-      let cloneArr = [];
-      if(count>0) {
-        let el = node.previousSibling;
-        while(count>0 && el) {
-          el.arrayTemplate = {'idx':i, 'node':node};
-          count--;
-          cloneArr.splice(0, 0, el);
-          el = el.previousSibling;
-        }
-      }
-      node.clones = node.clones.concat(cloneArr);
+      this._populate(node, i, null);
     });
+  }
+
+  _populate(template, i, clones) {
+    let clone = template.content.cloneNode(true);
+    let cs = clone.childNodes;
+    let count = cs ? cs.length : 0;
+    template.parentNode.insertBefore(clone, template);
+    let cloneArr = [];
+    if(count>0) {
+      let n = template.previousSibling;
+      while(count>0 && n) {
+        n.arrayTemplate = {'idx':i, 'node':template};
+        if(clones) {
+          clones.splice(0, 0, n);
+        }
+        count--;
+        cloneArr.splice(0, 0, n);
+        n = n.previousSibling;
+      }
+    }
+    template.clones = template.clones.concat(cloneArr);
   }
 
   /*override parent abstract method*/
   static stmtAttribute() {
-    return 'data-tmpl-array';
+    return 'data-array';
   }
 
 }

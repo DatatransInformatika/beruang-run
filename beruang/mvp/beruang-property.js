@@ -1,7 +1,8 @@
 import {BeruangCoercer} from './beruang-coercer.js';
+import {BeruangArray} from './beruang-array.js';
 
 export const BeruangProperty = (base) =>
-class extends base {
+class extends BeruangArray(base) {
   constructor() {
     super();
     this.prop = {};
@@ -15,31 +16,53 @@ class extends base {
     this._prop = obj;
   }
 
+  _getObjField(path) {
+    let arr = path.split('.');
+    let p0 = arr[0];
+    let propKeys = Object.keys(this.prop);
+    if(propKeys.indexOf(p0)==-1){
+      return null;
+    }
+    let obj = this[p0];
+    let lastIdx = arr.length - 1;
+    for(let i=1; obj!=undefined && obj!=null & i<lastIdx; i++) {
+      if(obj.hasOwnProperty(arr[i])) {
+        obj = obj[arr[i]];
+      } else {
+        obj = null;
+      }
+    }
+    if(obj===undefined || obj===null) {
+      return null;
+    }
+    let fld = lastIdx>0 ? arr[lastIdx] : null;
+    if(fld && !obj.hasOwnProperty(fld)) {
+      return null;
+    }
+    return {'prop':p0, 'obj':obj, 'fld':fld};
+  }
+
+  get(path) {
+    let objFld = this._getObjField(path);
+    if(!objFld) {
+      return null;
+    }
+    return objFld.fld ? objFld.obj[objFld.fld] : objFld.obj;
+  }
+
   set(path, val) {
-      let arr = path.split('.');
-      let p0 = arr[0];
-      let propKeys = Object.keys(this.prop);
-      if(propKeys.indexOf(p0)==-1){
-        return;
-      }
-      if(arr.length===1) {
-        this[p0] = val;
-        return;
-      }
-      let obj = this[p0];
-      let lastIdx = arr.length - 1;
-      let fld = arr[lastIdx];
-      for(let i=1; obj && i<lastIdx; i++) {
-        if(obj.hasOwnProperty(arr[i])) {
-          obj = obj[arr[i]];
+    let objFld = this._getObjField(path);
+    if(objFld) {
+      let oldVal = objFld.fld ? objFld.obj[objFld.fld] : objFld.obj;
+      if(val!=oldVal) {
+        if(objFld.fld) {
+          objFld.obj[objFld.fld] = val;
+          this.view.updateNode([objFld.prop], path);
         } else {
-          obj = null;
+          this[objFld.prop] = val;
         }
       }
-      if(obj) {
-        obj[fld] = val;
-        this.view.updateNode([p0], path);
-      }
+    }
   }
 
   get coercer() {
@@ -127,7 +150,7 @@ class extends base {
     }
     this._updateNodeXval = setTimeout(
       ()=>{
-          this.view.updateNode(this._updatedProps, null);
+          this.view.updateNode(this._updatedProps, null, null);
           this._updateNodeXval = null;
           this._updatedProps = null;
       }, 50);

@@ -37,7 +37,7 @@ class BeruangTemplateSwitch extends BeruangTemplate(Object) {
 
   /*override parent abstract method*/
   static stmtAttribute() {
-    return 'data-tmpl-switch';
+    return 'data-switch';
   }
 }
 
