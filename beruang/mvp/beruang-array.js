@@ -15,7 +15,8 @@ class extends base {
     items.forEach((item, i) => {
       arr.push(item);
     });
-    this.view.arrayPush(objFld.prop, startIdx, items.length, arr);
+    this.view.arrayPush(objFld.prop, startIdx, items.length);
+    return arr.length;
   }
 
 }

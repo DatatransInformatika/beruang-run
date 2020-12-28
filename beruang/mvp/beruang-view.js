@@ -159,8 +159,8 @@ class extends base {
     this._solveClones(clones);
   }
 
-  arrayPush(prop, startIdx, count, arr) {
-    let clones = this.tmplArray.push(prop, startIdx, count, arr,
+  arrayPush(prop, startIdx, count) {
+    let clones = this.tmplArray.push(prop, startIdx, count,
       this.propNodeMap);
     this._solveClones(clones);
   }

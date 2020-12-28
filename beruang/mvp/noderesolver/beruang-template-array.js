@@ -120,7 +120,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     return obj;
   }
 
-  push(prop, startIdx, count, arr, propNodeMap) {
+  push(prop, startIdx, count, propNodeMap) {
     let clones = [];
     let nodes = propNodeMap[prop];
     if(!(nodes && nodes.length>0)){
