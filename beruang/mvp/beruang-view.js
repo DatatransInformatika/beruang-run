@@ -162,7 +162,9 @@ class extends base {
   arrayPush(path, prop, startIdx, count) {
     let clones = this.tmplArray.push(path, prop, startIdx, count,
       this.propNodeMap);
-    this._solveClones(clones);
+    if( clones && clones.length>0 ) {
+      this._solveClones(clones);
+    }
   }
 
   arraySplice(path, prop, startIdx, count, removeCount) {

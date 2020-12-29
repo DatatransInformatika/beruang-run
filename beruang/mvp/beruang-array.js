@@ -11,6 +11,9 @@ class extends base {
       return;
     }
     let arr = objFld.fld ? objFld.obj[objFld.fld] : objFld.obj;
+    if(arr.constructor.name!='Array'){
+      return 0;
+    }
     let startIdx = arr.length;
     items.forEach((item, i) => {
       arr.push(item);
@@ -25,6 +28,9 @@ class extends base {
       return;
     }
     let arr = objFld.fld ? objFld.obj[objFld.fld] : objFld.obj;
+    if(arr.constructor.name!='Array'){
+      return 0;
+    }    
     if(index>=arr.length) {
       this.push(path, items);
       return 0;
