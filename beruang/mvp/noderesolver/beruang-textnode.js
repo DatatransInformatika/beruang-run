@@ -8,9 +8,7 @@ class BeruangTextNode extends BeruangNodeResolver(Object) {
 
   /*override parent abstract method*/
   parse(node, presenter, propNodeMap) {
-    let hasRawContent = !!node.rawContent;
-    let raw = hasRawContent ? node.rawContent : node.textContent;
-    let gs = raw.match(/[[]{2}\s{0,}\S{1,}[^[]{0,}\s{0,}]{2}/g);
+    let gs = node.textContent.match(/[[]{2}\s{0,}\S{1,}[^[]{0,}\s{0,}]{2}/g);
     if(!gs){
       return;
     }
@@ -30,7 +28,7 @@ class BeruangTextNode extends BeruangNodeResolver(Object) {
         node.props = node.props.concat(obj.props);
       }
     });
-    if(node.terms && !hasRawContent) {
+    if(node.terms) {
       node.rawContent = node.textContent;
     }
   }

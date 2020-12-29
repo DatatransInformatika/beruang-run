@@ -8,9 +8,9 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
   /*override parent method*/
   parse(node, presenter, propNodeMap) {
     super.parse(node, presenter, propNodeMap);
-    let item = node.getAttribute('data-tmpl-item') || 'item';
+    let item = node.getAttribute('data-item') || 'item';
     item = item.trim();
-    let idx = node.getAttribute('data-tmpl-index') || 'i';
+    let idx = node.getAttribute('data-index') || 'i';
     idx = idx.trim();
     node.tmpl = {'fldItem':item, 'fldIdx':idx};
   }
@@ -36,101 +36,6 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     });
   }
 
-  _termedClones(templateNode, equalFunc, nodes, termedNodes, arrayTmplClones)
-  {
-    nodes.forEach((node, i) => {
-      let arrayTemplate = this._arrayTemplate(node);
-      if(arrayTemplate && arrayTemplate.node===templateNode
-        && equalFunc(node, arrayTemplate))
-      {
-        if(node.terms) {
-          termedNodes.push(node);
-          if(arrayTmplClones) {
-            if( node.localName==='template' &&
-              node.hasAttribute(this.constructor.stmtAttribute()) )
-            {
-              arrayTmplClones.push(node);
-            }
-          }
-        }
-      }
-      if(node.childNodes && node.childNodes.length>0) {
-        this._termedClones(templateNode, equalFunc, node.childNodes,
-          termedNodes, arrayTmplClones);//recursive
-      }
-    });
-  }
-
- _substitutedClone(templateNode, val, paths, startPathIdx) {
-   let pathIdx = startPathIdx;
-   if( paths.length < (pathIdx+1) ) {
-     return null;
-   }
-   let idx = paths[pathIdx];//must be array index
-   if(isNaN(idx)) {
-     return null;
-   }
-
-   let clones = [];
-   let arrayTmplClones = [];
-   idx = parseInt(idx, 10);
-   this._termedClones(
-     templateNode, (node, arrayTemplate)=>arrayTemplate.idx==idx,
-     templateNode.clones, clones, arrayTmplClones);
-   if(clones.length==0) {
-     return null;
-   }
-   let spath = templateNode.tmpl.fldItem;/*rootPath*/
-   let _val = val[idx];
-   if(!_val) {
-     return null;
-   }
-
-   pathIdx++;
-   for(; pathIdx<paths.length; pathIdx++) {
-     let field = paths[pathIdx];
-     if(!isNaN(field)) {
-       if( !(_val && _val.constructor.name==='Array') ) {
-         return null;
-       }
-       break;
-     } else {
-       spath = spath + '.' + field;
-       if(!_val.hasOwnProperty(field)){
-         return null;
-       }
-       _val = _val[field];
-     }
-   }
-
-  if(pathIdx<paths.length) {//recursive
-     let cloneArr = [];
-     arrayTmplClones.forEach((arrayClone, j) => {
-       if(arrayClone.getAttribute(this.constructor.stmtAttribute())===spath) {
-         let arr = this._substitutedClone(arrayClone, _val, paths, pathIdx);
-         if( arr && arr.length>0 ) {
-           cloneArr = cloneArr.concat(arr);
-         }
-       }
-     });
-     return cloneArr;
-   } else {
-     let cloneArr = [];
-     clones.forEach((clone, i) => {
-       for(let j=0, len=clone.terms.length; j<len; j++){
-         let term = clone.terms[j];
-         if( term.paths.indexOf(spath) > -1 ){
-           this.substitute(clone, spath, val[idx], spath);
-           cloneArr.push(clone);
-           break;
-         }
-       }
-     });
-     return cloneArr;
-   }
-   return null;
- }
-
   arraySubstitute(node, p, val, pathmatch) {
     let obj = {'clones':null, 'hit':false};
     if(pathmatch && p!=pathmatch) {
@@ -144,12 +49,67 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     return obj;
   }
 
-  push(prop, startIdx, count, propNodeMap) {
+  _getArrayTemplatesByPath(rootPath, paths, startIdx, nodes, templates) {
+    if(!(nodes && nodes.length>0)){
+        return;
+    }
+    nodes.forEach((node, i) => {
+      let arrayAttr = node.getAttribute(this.constructor.stmtAttribute());
+      if(!arrayAttr) {
+        if(node.childNodes && node.childNodes.length>0){
+          this._getArrayTemplatesByPath(rootPath, paths, startIdx,
+            node.childNodes, templates);//recursive
+        }
+        return;
+      }
+
+      let pathLen = paths.length();
+      if(pathLen<=startIdx){
+        if(rootPath==arrayAttr) {
+          templates.push(node);
+        }
+        return;
+      }
+
+      //rootPath = node.getAttribute('data-item');//update rootPath
+
+      for(let i=startIdx; i<pathLen; i++) {
+        if(!isNaN(paths[i])) {
+          rootPath = node.getAttribute('data-item');//update rootPath
+        }
+      }
+
+      //let idx = paths[startIdx];
+      //if( isNaN(idx) ) {
+        //return;
+      //}
+
+
+      //rootPath =
+
+
+
+    });
+  }
+
+  push(path, prop, startIdx, count, propNodeMap) {
+    /*
+    let templates = [];
+    let paths = path.split(.);
+    this._getArrayTemplatesByPath(paths[0], paths, 1, propNodeMap[prop], templates);
+    if(templates.length==0){
+      return [];
+    }*/
+
     let clones = [];
+
+
+  //get array template nodes by prop path
     let nodes = propNodeMap[prop];
     if(!(nodes && nodes.length>0)){
       return clones;
     }
+
     nodes.forEach((node, i) => {
       if(!node.hasAttribute(this.constructor.stmtAttribute())){
         return;
@@ -170,12 +130,14 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     return clones;
   }
 
-  splice(prop, startIdx, insertCount, removeCount, propNodeMap) {
-    let clones = [];
+  splice(path, prop, startIdx, insertCount, removeCount, propNodeMap) {
     let nodes = propNodeMap[prop];
     if(!(nodes && nodes.length>0)){
-      return clones;
+      return null;
     }
+
+    let ret = {'clones':[], 'substitutes': []};
+
     nodes.forEach((node, i) => {
       if(!node.hasAttribute(this.constructor.stmtAttribute())){
         return;
@@ -206,7 +168,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
         let spliceIndex = obj ? obj.arrayIndex : node.clones.length;
         for(let i=startIdx, stop=startIdx+insertCount; i<stop; i++) {
           let c0 = node.clones.length;
-          this._populate(node, i, beforeNode, spliceIndex, clones);
+          this._populate(node, i, beforeNode, spliceIndex, ret.clones);
           let offset = node.clones.length -  c0;
           spliceIndex += offset;
           if(beforeNode!=node) {
@@ -220,19 +182,23 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
         let offset = insertCount - removeCount;
         if(offset!=0) {
           let clone = nextClone.clone;
-          while(clone && clone.arrayTemplate && clone.arrayTemplate.node===node) {
-            clone.arrayTemplate.idx += offset;
+          while(clone && clone.arrayTemplate
+            && clone.arrayTemplate.node===node)
+          {
+            let newIdx = clone.arrayTemplate.idx + offset;
+            let fldIdx = node.tmpl.fldIdx;
+            clone.arrayTemplate.idx = newIdx;
             if(clone.term) {
-              this.removeTermByPath(clone, node.tmpl.fldIdx);
-              clones.push(clone);
+              this.substitute(clone, fldIdx, newIdx, fldIdx);
+              ret.substitutes.push(clone);
             }
             if(clone.childNodes && clone.childNodes.length>0) {
               this._termedClones(node,
                 (_node, _arrayTemplate)=>{
-                  this.removeTermByPath(_node, node.tmpl.fldIdx);
+                  this.substitute(_node, fldIdx, newIdx, fldIdx);
                   return true;
                 },
-                clone.childNodes, clones, null);
+                clone.childNodes, ret.substitutes, null);
             }
             clone = clone.nextSibling;
           }
@@ -240,7 +206,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
       }
     });
 
-    return clones;
+    return ret;
   }
 
   _getFirstCloneIdx(clones, index) {
@@ -269,6 +235,102 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
         n = n.previousSibling;
       }
     }
+  }
+
+  _termedClones(templateNode, equalFunc, nodes, termedNodes, arrayTmplClones)
+  {
+    nodes.forEach((node, i) => {
+      let arrayTemplate = this._arrayTemplate(node);
+      if(arrayTemplate && arrayTemplate.node===templateNode
+        && equalFunc(node, arrayTemplate))
+      {
+        if(node.terms) {
+          termedNodes.push(node);
+          if(arrayTmplClones) {
+            if( node.localName==='template' &&
+              node.hasAttribute(this.constructor.stmtAttribute()) )
+            {
+              arrayTmplClones.push(node);
+            }
+          }
+        }
+      }
+      if(node.childNodes && node.childNodes.length>0) {
+        this._termedClones(templateNode, equalFunc, node.childNodes,
+          termedNodes, arrayTmplClones);//recursive
+      }
+    });
+  }
+
+  _substitutedClone(templateNode, val, paths, startPathIdx) {
+    let pathIdx = startPathIdx;
+    if( paths.length < (pathIdx+1) ) {
+      return null;
+    }
+    let idx = paths[pathIdx];//must be array index
+    if(isNaN(idx)) {
+      return null;
+    }
+
+    let clones = [];
+    let arrayTmplClones = [];
+    idx = parseInt(idx, 10);
+    this._termedClones(
+      templateNode, (node, arrayTemplate)=>arrayTemplate.idx==idx,
+      templateNode.clones, clones, arrayTmplClones
+    );
+    if(clones.length==0) {
+      return null;
+    }
+    let spath = templateNode.tmpl.fldItem;/*rootPath*/
+    let _val = val[idx];
+    if(!_val) {
+      return null;
+    }
+
+    pathIdx++;
+    for(; pathIdx<paths.length; pathIdx++) {
+      let field = paths[pathIdx];
+      if(!isNaN(field)) {
+        if( !(_val && _val.constructor.name==='Array') ) {
+          return null;
+        }
+        break;
+      } else {
+        spath = spath + '.' + field;
+        if(!_val.hasOwnProperty(field)){
+          return null;
+        }
+        _val = _val[field];
+      }
+    }
+
+    if(pathIdx<paths.length) {//recursive
+      let cloneArr = [];
+      arrayTmplClones.forEach((arrayClone, j) => {
+        if(arrayClone.getAttribute(this.constructor.stmtAttribute())===spath) {
+          let arr = this._substitutedClone(arrayClone, _val, paths, pathIdx);
+          if( arr && arr.length>0 ) {
+            cloneArr = cloneArr.concat(arr);
+          }
+        }
+      });
+      return cloneArr;
+    } else {
+      let cloneArr = [];
+      clones.forEach((clone, i) => {
+        for(let j=0, len=clone.terms.length; j<len; j++){
+          let term = clone.terms[j];
+          if( term.paths.indexOf(spath) > -1 ){
+            this.substitute(clone, spath, val[idx], spath);
+            cloneArr.push(clone);
+            break;
+          }
+        }
+      });
+      return cloneArr;
+    }
+    return null;
   }
 
   /*override parent abstract method*/

@@ -15,7 +15,7 @@ class extends base {
     items.forEach((item, i) => {
       arr.push(item);
     });
-    this.view.arrayPush(objFld.prop, startIdx, items.length);
+    this.view.arrayPush(path, objFld.prop, startIdx, items.length);
     return arr.length;
   }
 
@@ -25,6 +25,10 @@ class extends base {
       return;
     }
     let arr = objFld.fld ? objFld.obj[objFld.fld] : objFld.obj;
+    if(index>=arr.length) {
+      this.push(path, items);
+      return 0;
+    }
     let len0 = arr.length;
     for(let i=0; i<removeCount; i++) {
       arr.splice(index, 1);
@@ -34,7 +38,7 @@ class extends base {
     items.forEach((item, i) => {
       arr.splice(pushIdx++, 0, item);
     });
-    this.view.arraySplice(objFld.prop, index, items.length, removeCount);
+    this.view.arraySplice(path, objFld.prop, index, items.length, removeCount);
     return removes;
   }
 

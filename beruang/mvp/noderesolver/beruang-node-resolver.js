@@ -61,8 +61,12 @@ class extends base {
   }
 
   _objPathValue(obj, pathArr) {
-    for(let i=1;i<pathArr.length;i++) {
-      obj = obj[pathArr[i]];
+    for(let i=1, len=pathArr.length; obj!=null && i<len;i++) {
+      if(obj.hasOwnProperty(pathArr[i])) {
+        obj = obj[pathArr[i]];
+      } else {
+        return null;
+      }
     }
     return obj;
   }
@@ -197,14 +201,6 @@ class extends base {
       });
     });
     return hit;
-  }
-
-  removeTermByPath(node, path) {
-    for(let i=node.terms.length-1; i>=0; i--) {
-      if( node.terms[i].paths.indexOf(path)>-1 ) {
-        node.terms.splice(i, 1);
-      }
-    }
   }
 
   _propNodeMap(map, prop, node) {
