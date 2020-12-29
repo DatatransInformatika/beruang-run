@@ -223,17 +223,14 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
           while(clone && clone.arrayTemplate && clone.arrayTemplate.node===node) {
             clone.arrayTemplate.idx += offset;
             if(clone.term) {
-              this._removeTermByPath(clone, node.tmpl.fldIdx);
+              this.removeTermByPath(clone, node.tmpl.fldIdx);
               clones.push(clone);
             }
             if(clone.childNodes && clone.childNodes.length>0) {
               this._termedClones(node,
                 (_node, _arrayTemplate)=>{
-                  let match = _arrayTemplate.idx==clone.arrayTemplate.idx;
-                  if(match) {
-                    this._removeTermByPath(_node, node.tmpl.fldIdx);
-                  }
-                  return match;
+                  this.removeTermByPath(_node, node.tmpl.fldIdx);
+                  return true;
                 },
                 clone.childNodes, clones, null);
             }
@@ -244,14 +241,6 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     });
 
     return clones;
-  }
-
-  _removeTermByPath(node, path) {
-    for(let i=node.terms.length-1; i>=0; i--) {
-      if( node.terms[i].paths.indexOf(path)>-1 ) {
-        node.terms.splice(i, 1);
-      }
-    }
   }
 
   _getFirstCloneIdx(clones, index) {

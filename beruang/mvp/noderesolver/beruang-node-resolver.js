@@ -199,6 +199,14 @@ class extends base {
     return hit;
   }
 
+  removeTermByPath(node, path) {
+    for(let i=node.terms.length-1; i>=0; i--) {
+      if( node.terms[i].paths.indexOf(path)>-1 ) {
+        node.terms.splice(i, 1);
+      }
+    }
+  }
+
   _propNodeMap(map, prop, node) {
     let arr = map[prop] || [];
     if(arr.indexOf(node)==-1){
