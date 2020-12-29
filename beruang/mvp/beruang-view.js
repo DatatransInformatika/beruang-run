@@ -165,6 +165,12 @@ class extends base {
     this._solveClones(clones);
   }
 
+  arraySplice(prop, startIdx, count, removeCount) {
+    let clones = this.tmplArray.splice(prop, startIdx, count,
+      removeCount, this.propNodeMap);
+    this._solveClones(clones);
+  }
+
   _solveClones(clones) {
     if(clones.length>0) {
       let nodes = [];

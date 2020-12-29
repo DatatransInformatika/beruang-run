@@ -5,6 +5,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     super();
   }
 
+  /*override parent method*/
   parse(node, presenter, propNodeMap) {
     super.parse(node, presenter, propNodeMap);
     let item = node.getAttribute('data-tmpl-item') || 'item';
@@ -14,26 +15,48 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     node.tmpl = {'fldItem':item, 'fldIdx':idx};
   }
 
-  _termedClones(templateNode, arrTemplateIdx, nodes,
-    termedNodes, arrayTmplClones)
+  /*override parent abstract method*/
+  solve(view, node, propNodeMap) {
+    let term = node.terms[0];
+    let val = this.nodeValue(term, view);
+    if(val==null) {
+      return;
+    }
+    if(val.constructor.name!=='Array'){
+      val = this.coercer.toArray(val);
+    }
+
+    if(node.clones) {
+      this.removeClones(node.clones, propNodeMap);
+    }
+
+    node.clones = [];
+    val.forEach((item, i) => {
+      this._populate(node, i, node, node.clones.length, null);
+    });
+  }
+
+  _termedClones(templateNode, equalFunc, nodes, termedNodes, arrayTmplClones)
   {
     nodes.forEach((node, i) => {
       let arrayTemplate = this._arrayTemplate(node);
       if(arrayTemplate && arrayTemplate.node===templateNode
-        && arrayTemplate.idx==arrTemplateIdx)
+        && equalFunc(node, arrayTemplate))
       {
         if(node.terms) {
           termedNodes.push(node);
-          if( node.localName==='template' &&
-            node.hasAttribute(this.constructor.stmtAttribute()) )
-          {
-            arrayTmplClones.push(node);
+          if(arrayTmplClones) {
+            if( node.localName==='template' &&
+              node.hasAttribute(this.constructor.stmtAttribute()) )
+            {
+              arrayTmplClones.push(node);
+            }
           }
         }
       }
       if(node.childNodes && node.childNodes.length>0) {
-        this._termedClones(templateNode, arrTemplateIdx, node.childNodes,
-          termedNodes, arrayTmplClones);
+        this._termedClones(templateNode, equalFunc, node.childNodes,
+          termedNodes, arrayTmplClones);//recursive
       }
     });
   }
@@ -51,8 +74,9 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
    let clones = [];
    let arrayTmplClones = [];
    idx = parseInt(idx, 10);
-   this._termedClones(templateNode, idx, templateNode.clones,
-     clones, arrayTmplClones);
+   this._termedClones(
+     templateNode, (node, arrayTemplate)=>arrayTemplate.idx==idx,
+     templateNode.clones, clones, arrayTmplClones);
    if(clones.length==0) {
      return null;
    }
@@ -124,59 +148,138 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     let clones = [];
     let nodes = propNodeMap[prop];
     if(!(nodes && nodes.length>0)){
-      return;
+      return clones;
     }
     nodes.forEach((node, i) => {
       if(!node.hasAttribute(this.constructor.stmtAttribute())){
         return;
       }
+      let obj = this._getFirstCloneIdx(node.clones, startIdx);
+      let beforeNode = obj ? obj.clone : node;
+      let spliceIndex = obj ? obj.arrayIndex : node.clones.length;
       for(let i=startIdx, stop=startIdx+count; i<stop; i++) {
-        this._populate(node, i, clones);
+        let c0 = node.clones.length;
+        this._populate(node, i, beforeNode, spliceIndex, clones);
+        let offset = node.clones.length -  c0;
+        spliceIndex += offset;
+        if(beforeNode!=node) {
+          beforeNode = node.clones[spliceIndex];
+        }
       }
     });
     return clones;
   }
 
-  /*override parent abstract method*/
-  solve(view, node, propNodeMap) {
-    let term = node.terms[0];
-    let val = this.nodeValue(term, view);
-    if(val==null) {
-      return;
+  splice(prop, startIdx, insertCount, removeCount, propNodeMap) {
+    let clones = [];
+    let nodes = propNodeMap[prop];
+    if(!(nodes && nodes.length>0)){
+      return clones;
     }
-    if(val.constructor.name!=='Array'){
-      val = this.coercer.toArray(val);
-    }
+    nodes.forEach((node, i) => {
+      if(!node.hasAttribute(this.constructor.stmtAttribute())){
+        return;
+      }
 
-    if(node.clones) {
-      this.removeClones(node.clones, propNodeMap);
-    }
+      let nextClone = this._getFirstCloneIdx(node.clones,
+        startIdx + (removeCount>0 ? 1 : 0));
 
-    node.clones = [];
-    val.forEach((item, i) => {
-      this._populate(node, i, null);
+    //removeFirst
+      if(removeCount>0) {
+        let idx = startIdx + removeCount - 1;
+        for(; node.clones.length>0 && idx>=startIdx; idx--)
+        {
+          for(let j=node.clones.length-1; j>=0; j--) {
+            let clone = node.clones[j];
+            if(clone.arrayTemplate.idx==idx){
+              this._removeClone(clone, propNodeMap);
+              node.clones.splice(j, 1);
+            }
+          }
+        }
+      }
+
+    //insert
+      if(insertCount>0) {
+        let obj = this._getFirstCloneIdx(node.clones, startIdx + removeCount);
+        let beforeNode = obj ? obj.clone : node;
+        let spliceIndex = obj ? obj.arrayIndex : node.clones.length;
+        for(let i=startIdx, stop=startIdx+insertCount; i<stop; i++) {
+          let c0 = node.clones.length;
+          this._populate(node, i, beforeNode, spliceIndex, clones);
+          let offset = node.clones.length -  c0;
+          spliceIndex += offset;
+          if(beforeNode!=node) {
+            beforeNode = node.clones[spliceIndex];
+          }
+        }
+      }
+
+    //correct idx for shifted clones
+      if( nextClone ) {
+        let offset = insertCount - removeCount;
+        if(offset!=0) {
+          let clone = nextClone.clone;
+          while(clone && clone.arrayTemplate && clone.arrayTemplate.node===node) {
+            clone.arrayTemplate.idx += offset;
+            if(clone.term) {
+              this._removeTermByPath(clone, node.tmpl.fldIdx);
+              clones.push(clone);
+            }
+            if(clone.childNodes && clone.childNodes.length>0) {
+              this._termedClones(node,
+                (_node, _arrayTemplate)=>{
+                  let match = _arrayTemplate.idx==clone.arrayTemplate.idx;
+                  if(match) {
+                    this._removeTermByPath(_node, node.tmpl.fldIdx);
+                  }
+                  return match;
+                },
+                clone.childNodes, clones, null);
+            }
+            clone = clone.nextSibling;
+          }
+        }
+      }
     });
+
+    return clones;
   }
 
-  _populate(template, i, clones) {
+  _removeTermByPath(node, path) {
+    for(let i=node.terms.length-1; i>=0; i--) {
+      if( node.terms[i].paths.indexOf(path)>-1 ) {
+        node.terms.splice(i, 1);
+      }
+    }
+  }
+
+  _getFirstCloneIdx(clones, index) {
+    for(let i=0, len=clones.length; i<len; i++) {
+      let n = clones[i];
+      if(n.arrayTemplate.idx==index) {
+        return {'clone':n, 'arrayIndex':i};
+      }
+    }
+    return null;
+  }
+
+  _populate(template, i, beforeNode, spliceIndex, clones) {
     let clone = template.content.cloneNode(true);
-    let cs = clone.childNodes;
-    let count = cs ? cs.length : 0;
-    template.parentNode.insertBefore(clone, template);
-    let cloneArr = [];
+    let count = clone.childNodes ? clone.childNodes.length : 0;
     if(count>0) {
-      let n = template.previousSibling;
+      template.parentNode.insertBefore(clone, beforeNode);
+      let n = beforeNode.previousSibling;
       while(count>0 && n) {
         n.arrayTemplate = {'idx':i, 'node':template};
         if(clones) {
           clones.splice(0, 0, n);
         }
         count--;
-        cloneArr.splice(0, 0, n);
+        template.clones.splice(spliceIndex, 0, n);
         n = n.previousSibling;
       }
     }
-    template.clones = template.clones.concat(cloneArr);
   }
 
   /*override parent abstract method*/
