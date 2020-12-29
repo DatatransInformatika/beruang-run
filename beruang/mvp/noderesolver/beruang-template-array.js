@@ -49,46 +49,6 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     return obj;
   }
 
-  _getArrayTemplatesByPath(rootPath, paths, startIdx, nodes, templates) {
-    if(!(nodes && nodes.length>0)){
-      return;
-    }
-
-    let arrIdx = -1;
-    for(; startIdx<paths.length; startIdx++) {
-      let s = paths[startIdx];
-      if( isNaN(s) ) {
-        rootPath = rootPath + '.' + s;
-      } else {
-        arrIdx = parseInt(s, 10);
-        break;
-      }
-    }
-
-    let arrAttr = this.constructor.stmtAttribute();
-    nodes.forEach((node, i) => {
-      let attr = node.getAttribute ?node.getAttribute(arrAttr) : null;
-      if( attr && attr==rootPath ) {
-        if(startIdx >= paths.length) {
-          templates.push(node);
-        } else {
-          let _next = [];
-          for(let j=0, len=node.clones.length; j<len; j++) {
-            let c = node.clones[j];
-            if(c.hasAttribute && c.hasAttribute(arrAttr)) {
-              if(c.arrayTemplate.idx==arrIdx){
-                _next.push(c);
-              }
-            }
-          }
-          rootPath = node.tmpl.fldItem;
-          this._getArrayTemplatesByPath(rootPath, paths, startIdx+1,
-            _next, templates);
-        }
-      }
-    });
-  }
-
   push(path, prop, startIdx, count, propNodeMap) {
     let nodes = [];
     let paths = path.split('.');
@@ -317,6 +277,46 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
       return cloneArr;
     }
     return null;
+  }
+
+  _getArrayTemplatesByPath(rootPath, paths, startIdx, nodes, templates) {
+    if(!(nodes && nodes.length>0)){
+      return;
+    }
+
+    let arrIdx = -1;
+    for(; startIdx<paths.length; startIdx++) {
+      let s = paths[startIdx];
+      if( isNaN(s) ) {
+        rootPath = rootPath + '.' + s;
+      } else {
+        arrIdx = parseInt(s, 10);
+        break;
+      }
+    }
+
+    let arrAttr = this.constructor.stmtAttribute();
+    nodes.forEach((node, i) => {
+      let attr = node.getAttribute ? node.getAttribute(arrAttr) : null;
+      if( attr && attr==rootPath ) {
+        if(startIdx >= paths.length) {
+          templates.push(node);
+        } else {
+          let _next = [];
+          for(let j=0, len=node.clones.length; j<len; j++) {
+            let c = node.clones[j];
+            if(c.hasAttribute && c.hasAttribute(arrAttr)) {
+              if(c.arrayTemplate.idx==arrIdx){
+                _next.push(c);
+              }
+            }
+          }
+          rootPath = node.tmpl.fldItem;
+          this._getArrayTemplatesByPath(rootPath, paths, startIdx+1,
+            _next, templates);
+        }
+      }
+    });
   }
 
   /*override parent abstract method*/
