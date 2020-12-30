@@ -193,14 +193,9 @@ class extends base {
   pathSubstitute(node, path, val) {
     let hit = false;
     node.terms.forEach((term, i) => {
-      let paths = path.split('.');
-      let arg = paths[0];
-      term.args.forEach((_arg, j) => {
-        if(_arg!=arg) {
-          return;
-        }
-        if(term.paths[j]==path) {
-          let _val = this.objPathValue(val, path.split('.'));
+      term.paths.forEach((_path, j) => {
+        if(_path==path) {
+          let _val = val;
           if(term.negs[j]) {
             _val = !this.coercer.toBoolean(_val);
           }

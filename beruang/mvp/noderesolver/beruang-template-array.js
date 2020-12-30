@@ -36,25 +36,6 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     });
   }
 
-  push(nodes, startIdx, count) {
-    let clones = [];
-    nodes.forEach((node, i) => {
-      let obj = this.getFirstCloneIdx(node.clones, startIdx);
-      let beforeNode = obj ? obj.clone : node;
-      let spliceIndex = obj ? obj.arrayIndex : node.clones.length;
-      for(let i=startIdx, stop=startIdx+count; i<stop; i++) {
-        let c0 = node.clones.length;
-        this.populate(node, i, beforeNode, spliceIndex, clones);
-        let offset = node.clones.length -  c0;
-        spliceIndex += offset;
-        if(beforeNode!=node) {
-          beforeNode = node.clones[spliceIndex];
-        }
-      }
-    });
-    return clones;
-  }
-
   splice(nodes, startIdx, insertCount, removeCount, propNodeMap) {
     let ret = {'clones':[], 'substitutes': []};
     nodes.forEach((node, i) => {

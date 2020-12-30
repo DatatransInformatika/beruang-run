@@ -12,7 +12,7 @@ class extends base {
     }
     let startIdx = arr.length;
     arr.push(...items);
-    this.view.arrayPush(path, startIdx, items.length);
+    this.view.arraySplice(path, startIdx, items.length, 0);
     return arr.length;
   }
 
@@ -35,7 +35,8 @@ class extends base {
     if(!arr) {
       return 0;
     }
-    this.splice(path, 0, 0, ...items);
+    arr.unshift(...items);
+    this.view.arraySplice(path, 0, items.length, 0);
     return arr.length;
   }
 
