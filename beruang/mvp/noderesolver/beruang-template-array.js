@@ -51,19 +51,21 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
 
   push(path, prop, startIdx, count, propNodeMap) {
     let nodes = [];
+    let otherNodes = [];
     let paths = path.split('.');
-    this._getArrayTemplatesByPath(prop, paths, 1, propNodeMap[prop], nodes);
+    this._getArrayTemplatesByPath(prop, paths, 1, propNodeMap[prop], nodes,
+      otherNodes);
     if(nodes.length==0) {
       return null;
     }
-    let clones = [];
+    let ret = {'clones':[], 'substitutes': otherNodes};
     nodes.forEach((node, i) => {
       let obj = this._getFirstCloneIdx(node.clones, startIdx);
       let beforeNode = obj ? obj.clone : node;
       let spliceIndex = obj ? obj.arrayIndex : node.clones.length;
       for(let i=startIdx, stop=startIdx+count; i<stop; i++) {
         let c0 = node.clones.length;
-        this._populate(node, i, beforeNode, spliceIndex, clones);
+        this._populate(node, i, beforeNode, spliceIndex, ret.clones);
         let offset = node.clones.length -  c0;
         spliceIndex += offset;
         if(beforeNode!=node) {
@@ -71,18 +73,20 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
         }
       }
     });
-    return clones;
+    return ret;
   }
 
   splice(path, prop, startIdx, insertCount, removeCount, propNodeMap) {
     let nodes = [];
+    let otherNodes = [];
     let paths = path.split('.');
-    this._getArrayTemplatesByPath(prop, paths, 1, propNodeMap[prop], nodes);
-    if(nodes.length==0) {
+    this._getArrayTemplatesByPath(prop, paths, 1, propNodeMap[prop], nodes,
+      otherNodes);
+    if(nodes.length==0 && otherNodes.length==0) {
       return null;
     }
 
-    let ret = {'clones':[], 'substitutes': []};
+    let ret = {'clones':[], 'substitutes': otherNodes};
 
     nodes.forEach((node, i) => {
       if(!node.hasAttribute(this.constructor.stmtAttribute())){
@@ -141,8 +145,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
             if(clone.childNodes && clone.childNodes.length>0) {
               this._termedClones(node,
                 (_node, _arrayTemplate)=>{
-                  this.substitute(_node, fldIdx, newIdx, fldIdx);
-                  return true;
+                  return this.substitute(_node, fldIdx, newIdx, fldIdx);
                 },
                 clone.childNodes, ret.substitutes, null);
             }
@@ -279,7 +282,9 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     return null;
   }
 
-  _getArrayTemplatesByPath(rootPath, paths, startIdx, nodes, templates) {
+  _getArrayTemplatesByPath(rootPath, paths, startIdx, nodes, arrayTemplates,
+    otherNodes)
+  {
     if(!(nodes && nodes.length>0)){
       return;
     }
@@ -297,23 +302,28 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
 
     let arrAttr = this.constructor.stmtAttribute();
     nodes.forEach((node, i) => {
-      let attr = node.getAttribute ? node.getAttribute(arrAttr) : null;
-      if( attr && attr==rootPath ) {
-        if(startIdx >= paths.length) {
-          templates.push(node);
-        } else {
-          let _next = [];
-          for(let j=0, len=node.clones.length; j<len; j++) {
-            let c = node.clones[j];
-            if(c.hasAttribute && c.hasAttribute(arrAttr)) {
-              if(c.arrayTemplate.idx==arrIdx){
-                _next.push(c);
-              }
-            }
+      if(node.hasAttribute && node.hasAttribute(arrAttr)) {
+        let attr = node.getAttribute ? node.getAttribute(arrAttr) : null;
+        if( attr && attr==rootPath ) {
+          if(startIdx >= paths.length) {
+            arrayTemplates.push(node);
+          } else {
+            let _next = [];
+            this._termedClones(node,
+              (_node, _arrayTemplate)=>_arrayTemplate.idx==arrIdx,
+              node.clones, _next, null);
+            rootPath = node.tmpl.fldItem;
+            this._getArrayTemplatesByPath(rootPath, paths, startIdx+1, _next,
+              arrayTemplates, otherNodes);
           }
-          rootPath = node.tmpl.fldItem;
-          this._getArrayTemplatesByPath(rootPath, paths, startIdx+1,
-            _next, templates);
+        }
+      } else {
+        if(startIdx==1) {
+          otherNodes.push(node);
+        } else {
+          if(node.terms && this.pathExists(node.terms, rootPath)){
+            otherNodes.push(node);
+          }
         }
       }
     });

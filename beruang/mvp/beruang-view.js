@@ -160,10 +160,11 @@ class extends base {
   }
 
   arrayPush(path, prop, startIdx, count) {
-    let clones = this.tmplArray.push(path, prop, startIdx, count,
+    let obj = this.tmplArray.push(path, prop, startIdx, count,
       this.propNodeMap);
-    if( clones && clones.length>0 ) {
-      this._solveClones(clones);
+    if(obj) {
+      this._solveClones(obj.clones);
+      this.solveNode(obj.substitutes);
     }
   }
 

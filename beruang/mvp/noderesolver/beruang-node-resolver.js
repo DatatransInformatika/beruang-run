@@ -22,6 +22,15 @@ class extends base {
     return false;
   }
 
+  pathExists(terms, path) {
+    for(let i=0, len=terms.length; i<len ;i++){
+      if(terms[i].paths.indexOf(path)>-1){
+        return true;
+      }
+    }
+    return false;
+  }
+
   nodeValue(term, view) {
     let val = null;
     if(term.fname) {

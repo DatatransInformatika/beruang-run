@@ -20,6 +20,9 @@ Desktop [[_large (123, label, ADUH)]] at [[address]]
 once more [[_large(123, label, ADUH)]]</b>
     <slot></slot>
     <template data-switch="!show">cond [[address]] <div>conditional [[label]]</div></template>
+    <div>simpleArray size: [[_arrayLen(simpleArray)]]
+      <div>simpleArray size 2: [[_arrayLen(simpleArray)]]</div>
+    </div>
     <template data-array="simpleArray" data-item="n" data-index="i">
     <div>[[i]] [[n]] [[_plusTen(i)]]</div>
     </template>
@@ -31,6 +34,7 @@ once more [[_large(123, label, ADUH)]]</b>
     <template data-switch="show">
       <template data-array="nestedArray" data-item="p" data-index="j">
         <div>[[j]] [[p.label]]</div>
+        <div>p.sub array size: [[_arrayLen(p.sub)]]</div>
         <template data-array="p.sub" data-item="q" data-index="k">
           <div>[[k]] [[q.sub1]] [[q.sub2]]</div>
         </template>
@@ -45,6 +49,10 @@ once more [[_large(123, label, ADUH)]]</b>
 
   _plusTen(n) {
     return n + 10;
+  }
+
+  _arrayLen(arr) {
+    return arr ? arr.length : 0;
   }
 
 }
