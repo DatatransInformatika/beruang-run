@@ -212,6 +212,45 @@ class extends base {
     return hit;
   }
 
+  pathSubstitute(node, path, val) {
+    let hit = false;
+    node.terms.forEach((term, i) => {
+      let paths = path.split('.');
+      let arg = paths[0];
+      term.args.forEach((_arg, j) => {
+        if(_arg!=arg) {
+          return;
+        }
+        if(term.paths[j]==path) {
+          let _val = this._objPathValue(val, path.split('.'));
+          if(term.negs[j]) {
+            _val = !this.coercer.toBoolean(_val);
+          }
+          term.vals[j] = _val;
+          hit = true;
+        }
+      });
+    });
+    return hit;
+/*      term.args.forEach((arg, j) => {
+        if(arg!=p) {
+          return;
+        }
+        let path = term.paths[j];
+        if(pathmatch && pathmatch!=path) {
+          return;
+        }
+        let _val = this._objPathValue(val, path.split('.'));
+        if(term.negs[j]) {
+          _val = !this.coercer.toBoolean(_val);
+        }
+        term.vals[j] = _val;
+        hit = true;
+      });
+    });*/
+    //return hit;
+  }
+
   _propNodeMap(map, prop, node) {
     let arr = map[prop] || [];
     if(arr.indexOf(node)==-1){

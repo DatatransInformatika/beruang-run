@@ -16,32 +16,6 @@ class extends BeruangArray(base) {
     this._prop = obj;
   }
 
-  _getObjField(path) {
-    let arr = path.split('.');
-    let p0 = arr[0];
-    let propKeys = Object.keys(this.prop);
-    if(propKeys.indexOf(p0)==-1){
-      return null;
-    }
-    let obj = this[p0];
-    let lastIdx = arr.length - 1;
-    for(let i=1; obj!=undefined && obj!=null & i<lastIdx; i++) {
-      if(obj.hasOwnProperty(arr[i])) {
-        obj = obj[arr[i]];
-      } else {
-        obj = null;
-      }
-    }
-    if(obj===undefined || obj===null) {
-      return null;
-    }
-    let fld = lastIdx>0 ? arr[lastIdx] : null;
-    if(fld && !obj.hasOwnProperty(fld)) {
-      return null;
-    }
-    return {'prop':p0, 'obj':obj, 'fld':fld};
-  }
-
   get(path) {
     let objFld = this._getObjField(path);
     if(!objFld) {
@@ -57,7 +31,7 @@ class extends BeruangArray(base) {
       if(val!=oldVal) {
         if(objFld.fld) {
           objFld.obj[objFld.fld] = val;
-          this.view.updateNode([objFld.prop], path);
+          this.view.updateNode([objFld.prop]);
         } else {
           this[objFld.prop] = val;
         }
@@ -150,9 +124,35 @@ class extends BeruangArray(base) {
     }
     this._updateNodeXval = setTimeout(
       ()=>{
-          this.view.updateNode(this._updatedProps, null, null);
+          this.view.updateNode(this._updatedProps);
           this._updateNodeXval = null;
           this._updatedProps = null;
       }, 50);
+  }
+
+  _getObjField(path) {
+    let arr = path.split('.');
+    let p0 = arr[0];
+    let propKeys = Object.keys(this.prop);
+    if(propKeys.indexOf(p0)==-1){
+      return null;
+    }
+    let obj = this[p0];
+    let lastIdx = arr.length - 1;
+    for(let i=1; obj!=undefined && obj!=null & i<lastIdx; i++) {
+      if(obj.hasOwnProperty(arr[i])) {
+        obj = obj[arr[i]];
+      } else {
+        obj = null;
+      }
+    }
+    if(obj===undefined || obj===null) {
+      return null;
+    }
+    let fld = lastIdx>0 ? arr[lastIdx] : null;
+    if(fld && !obj.hasOwnProperty(fld)) {
+      return null;
+    }
+    return {'prop':p0, 'obj':obj, 'fld':fld};
   }
 }

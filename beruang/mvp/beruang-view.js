@@ -84,54 +84,45 @@ class extends base {
     }
   }
 
-  updateNode(props, path/*may be null*/) {
-    let affectedNodes = [];
-
+  updateNode(props) {
+    let rslt = [];
     props.forEach((p, i) => {
-      let nodes = this.propNodeMap[p];
-      if(!nodes) {
-        return;
-      }
-      let val = this.presenter[p];
-      nodes.forEach((node, i) => {
-        let hit = false;
+        this._updateNode(p, rslt);
+    });
+    if(rslt.length>0) {
+        this.solveNode(rslt);
+    }
+  }
+
+  _updateNode(path, rslt) {
+    let obj = this._pathNodes( path, (node)=>true );
+    if(obj.finalNodes.length>0) {
+      obj.finalNodes.forEach((node, i) => {
+        let val = this.presenter.get(path);
         if(node.nodeType===3/*Text*/) {
-          if(this.textNode.substitute(node, p, val, path)){
-            hit = true;
+          if(this.textNode.pathSubstitute(node, path, val)){
+            rslt.push(node);
           }
         } else if(node.nodeType==1/*Element*/) {
           if(node.localName==='template') {
-            if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {
-              if(this.tmplSwitch.substitute(node, p, val, path)){
-                hit = true;
+            if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {//switch
+              if(this.tmplSwitch.pathSubstitute(node, path, val)){
+                rslt.push(node);
               }
-            } else if( node.hasAttribute(
-                this.tmplArray.stmtAttribute()) ){
-              let obj = this.tmplArray.arraySubstitute(node, p, val, path);
-              if(obj.clones) {
-                obj.clones.forEach((clone, i) => {
-                  if(affectedNodes.indexOf(clone)==-1) {
-                    affectedNodes.push(clone);
-                  }
-                });
-              }
-              if(obj.hit) {
-                hit = true;
+            } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
+              if(this.tmplArray.pathSubstitute(node, path, val)){
+                rslt.push(node);
               }
             }
           } else {
 
           }
         }
-        if(hit) {
-          if(affectedNodes.indexOf(node)==-1){
-            affectedNodes.push(node);
-          }
-        }
       });
-    });
-
-    this.solveNode(affectedNodes);
+      if(obj.pathNodes>0) {
+        rslt = rslt.concat(obj.pathNodes);
+      }
+    }
   }
 
   solveNode(nodes) {
@@ -170,15 +161,6 @@ class extends base {
       }
     }
   }
-
-  /*arraySplice2(path, prop, startIdx, count, removeCount) {
-    let obj = this.tmplArray.splice(path, prop, startIdx, count,
-      removeCount, this.propNodeMap);
-    if(obj) {
-      this._solveClones(obj.clones);
-      this.solveNode(obj.substitutes);
-    }
-  }*/
 
   arraySplice(path, startIdx, count, removeCount) {
     let obj = this._pathNodes( path, (node)=>node.hasAttribute &&

@@ -36,19 +36,6 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     });
   }
 
-  arraySubstitute(node, p, val, pathmatch) {
-    let obj = {'clones':null, 'hit':false};
-    if(pathmatch && p!=pathmatch) {
-      if(node.clones && node.clones.length>0) {
-        let paths = pathmatch.split('.');
-        obj.clones = this._substitutedClone(node, val, paths, 1);
-      }
-    } else {
-      obj.hit = super.substitute(node, p, val, pathmatch);
-    }
-    return obj;
-  }
-
   push(nodes, startIdx, count) {
     let clones = [];
     nodes.forEach((node, i) => {
@@ -190,77 +177,6 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
           termedNodes, arrayTmplClones);//recursive
       }
     });
-  }
-
-  _substitutedClone(templateNode, val, paths, startPathIdx) {
-    let pathIdx = startPathIdx;
-    if( paths.length < (pathIdx+1) ) {
-      return null;
-    }
-    let idx = paths[pathIdx];//must be array index
-    if(isNaN(idx)) {
-      return null;
-    }
-
-    let clones = [];
-    let arrayTmplClones = [];
-    idx = parseInt(idx, 10);
-    this._termedClones(
-      templateNode, (node, arrayTemplate)=>arrayTemplate.idx==idx,
-      templateNode.clones, clones, arrayTmplClones
-    );
-    if(clones.length==0) {
-      return null;
-    }
-    let spath = templateNode.tmpl.fldItem;/*rootPath*/
-    let _val = val[idx];
-    if(!_val) {
-      return null;
-    }
-
-    pathIdx++;
-    for(; pathIdx<paths.length; pathIdx++) {
-      let field = paths[pathIdx];
-      if(!isNaN(field)) {
-        if( !(_val && _val.constructor.name==='Array') ) {
-          return null;
-        }
-        break;
-      } else {
-        spath = spath + '.' + field;
-        if(!_val.hasOwnProperty(field)){
-          return null;
-        }
-        _val = _val[field];
-      }
-    }
-
-    if(pathIdx<paths.length) {//recursive
-      let cloneArr = [];
-      arrayTmplClones.forEach((arrayClone, j) => {
-        if(arrayClone.getAttribute(this.stmtAttribute())===spath) {
-          let arr = this._substitutedClone(arrayClone, _val, paths, pathIdx);
-          if( arr && arr.length>0 ) {
-            cloneArr = cloneArr.concat(arr);
-          }
-        }
-      });
-      return cloneArr;
-    } else {
-      let cloneArr = [];
-      clones.forEach((clone, i) => {
-        for(let j=0, len=clone.terms.length; j<len; j++){
-          let term = clone.terms[j];
-          if( term.paths.indexOf(spath) > -1 ){
-            this.substitute(clone, spath, val[idx], spath);
-            cloneArr.push(clone);
-            break;
-          }
-        }
-      });
-      return cloneArr;
-    }
-    return null;
   }
 
   /*override parent abstract method*/
