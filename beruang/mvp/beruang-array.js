@@ -6,51 +6,47 @@ class extends base {
   }
 
   push(path, ...items) {//return new array length
-    let obj = this._getArray(path);
-    if(!obj) {
+    let arr = this._getArray(path);
+    if(!arr) {
       return 0;
     }
-    let startIdx = obj.arr.length;
-    items.forEach((item, i) => {
-      obj.arr.push(item);
-    });
-    this.view.arrayPush(path, obj.prop, startIdx, items.length);
-    return obj.arr.length;
+    let startIdx = arr.length;
+    arr.push(...items);
+    this.view.arrayPush(path, startIdx, items.length);
+    return arr.length;
   }
 
-  splice(path, index, removeCount, ...items) {//return removed count
-    let obj = this._getArray(path);
-    if(!obj) {
+  splice(path, index, removeCount, ...items) {//return removed items
+    let arr = this._getArray(path);
+    if(!arr) {
       return 0;
     }
-    if(index >= obj.arr.length) {
-      this.push(path, items);
+    if(index >= arr.length) {
+      this.push(path, ...items);
       return 0;
     }
-    let len0 = obj.arr.length;
-    for(let i=0; i<removeCount; i++) {
-      obj.arr.splice(index, 1);
-    }
-    let removes = len0 - obj.arr.length;
-    let pushIdx = index;
-    items.forEach((item, i) => {
-      obj.arr.splice(pushIdx++, 0, item);
-    });
-    this.view.arraySplice(path, obj.prop, index, items.length, removeCount);
+    let removes = arr.splice(index, removeCount, ...items);
+    this.view.arraySplice(path, index, items.length, removeCount);
     return removes;
   }
 
   unshift(path, ...items) {//return new length
-    let obj = this._getArray(path);
-    if(!obj) {
+    let arr = this._getArray(path);
+    if(!arr) {
       return 0;
     }
-    let pushIdx = 0;
-    items.forEach((item, i) => {
-      obj.arr.splice(pushIdx++, 0, item);
-    });
-    this.view.arraySplice(path, obj.prop, 0, items.length, 0);
-    return obj.arr.length;
+    this.splice(path, 0, 0, ...items);
+    return arr.length;
+  }
+
+  shift(path) {//return removed item
+    let arr = this._getArray(path);
+    if(!arr) {
+      return null;
+    }
+    let ret = arr.shift();
+    this.view.arraySplice(path, 0, 0, 1);
+    return ret;
   }
 
   _getArray(path) {
@@ -59,8 +55,7 @@ class extends base {
       return null;
     }
     let arr = objFld.fld ? objFld.obj[objFld.fld] : objFld.obj;
-    return arr && arr.constructor.name=='Array' ?
-      {'arr':arr, 'prop':objFld.prop} : null;
+    return arr && arr.constructor.name=='Array' ? arr : null;
   }
 
 }

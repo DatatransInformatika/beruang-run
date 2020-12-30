@@ -49,23 +49,15 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     return obj;
   }
 
-  push(path, prop, startIdx, count, propNodeMap) {
-    let nodes = [];
-    let otherNodes = [];
-    let paths = path.split('.');
-    this._getArrayTemplatesByPath(prop, paths, 1, propNodeMap[prop], nodes,
-      otherNodes);
-    if(nodes.length==0) {
-      return null;
-    }
-    let ret = {'clones':[], 'substitutes': otherNodes};
+  push(nodes, startIdx, count) {
+    let clones = [];
     nodes.forEach((node, i) => {
       let obj = this._getFirstCloneIdx(node.clones, startIdx);
       let beforeNode = obj ? obj.clone : node;
       let spliceIndex = obj ? obj.arrayIndex : node.clones.length;
       for(let i=startIdx, stop=startIdx+count; i<stop; i++) {
         let c0 = node.clones.length;
-        this._populate(node, i, beforeNode, spliceIndex, ret.clones);
+        this._populate(node, i, beforeNode, spliceIndex, clones);
         let offset = node.clones.length -  c0;
         spliceIndex += offset;
         if(beforeNode!=node) {
@@ -73,23 +65,13 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
         }
       }
     });
-    return ret;
+    return clones;
   }
 
-  splice(path, prop, startIdx, insertCount, removeCount, propNodeMap) {
-    let nodes = [];
-    let otherNodes = [];
-    let paths = path.split('.');
-    this._getArrayTemplatesByPath(prop, paths, 1, propNodeMap[prop], nodes,
-      otherNodes);
-    if(nodes.length==0 && otherNodes.length==0) {
-      return null;
-    }
-
-    let ret = {'clones':[], 'substitutes': otherNodes};
-
+  splice(nodes, startIdx, insertCount, removeCount, propNodeMap) {
+    let ret = {'clones':[], 'substitutes': []};
     nodes.forEach((node, i) => {
-      if(!node.hasAttribute(this.constructor.stmtAttribute())){
+      if(!node.hasAttribute(this.stmtAttribute())){
         return;
       }
 
@@ -154,7 +136,6 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
         }
       }
     });
-
     return ret;
   }
 
@@ -197,7 +178,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
           termedNodes.push(node);
           if(arrayTmplClones) {
             if( node.localName==='template' &&
-              node.hasAttribute(this.constructor.stmtAttribute()) )
+              node.hasAttribute(this.stmtAttribute()) )
             {
               arrayTmplClones.push(node);
             }
@@ -257,7 +238,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     if(pathIdx<paths.length) {//recursive
       let cloneArr = [];
       arrayTmplClones.forEach((arrayClone, j) => {
-        if(arrayClone.getAttribute(this.constructor.stmtAttribute())===spath) {
+        if(arrayClone.getAttribute(this.stmtAttribute())===spath) {
           let arr = this._substitutedClone(arrayClone, _val, paths, pathIdx);
           if( arr && arr.length>0 ) {
             cloneArr = cloneArr.concat(arr);
@@ -282,55 +263,8 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     return null;
   }
 
-  _getArrayTemplatesByPath(rootPath, paths, startIdx, nodes, arrayTemplates,
-    otherNodes)
-  {
-    if(!(nodes && nodes.length>0)){
-      return;
-    }
-
-    let arrIdx = -1;
-    for(; startIdx<paths.length; startIdx++) {
-      let s = paths[startIdx];
-      if( isNaN(s) ) {
-        rootPath = rootPath + '.' + s;
-      } else {
-        arrIdx = parseInt(s, 10);
-        break;
-      }
-    }
-
-    let arrAttr = this.constructor.stmtAttribute();
-    nodes.forEach((node, i) => {
-      if(node.hasAttribute && node.hasAttribute(arrAttr)) {
-        let attr = node.getAttribute ? node.getAttribute(arrAttr) : null;
-        if( attr && attr==rootPath ) {
-          if(startIdx >= paths.length) {
-            arrayTemplates.push(node);
-          } else {
-            let _next = [];
-            this._termedClones(node,
-              (_node, _arrayTemplate)=>_arrayTemplate.idx==arrIdx,
-              node.clones, _next, null);
-            rootPath = node.tmpl.fldItem;
-            this._getArrayTemplatesByPath(rootPath, paths, startIdx+1, _next,
-              arrayTemplates, otherNodes);
-          }
-        }
-      } else {
-        if(startIdx==1) {
-          otherNodes.push(node);
-        } else {
-          if(node.terms && this.pathExists(node.terms, rootPath)){
-            otherNodes.push(node);
-          }
-        }
-      }
-    });
-  }
-
   /*override parent abstract method*/
-  static stmtAttribute() {
+  stmtAttribute() {
     return 'data-array';
   }
 

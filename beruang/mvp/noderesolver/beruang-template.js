@@ -8,7 +8,7 @@ class extends BeruangNodeResolver(base) {
 
   /*override parent abstract method*/
   parse(node, presenter, propNodeMap) {
-    let attr = this.constructor.stmtAttribute();
+    let attr = this.stmtAttribute();
     let stmt = node.getAttribute(attr) || '';
     stmt = stmt.toString();
     if(stmt.length<1){
@@ -61,7 +61,7 @@ class extends BeruangNodeResolver(base) {
   }
 
 //abstract:BEGIN
-  static stmtAttribute() {
+  stmtAttribute() {
     throw new Error('BeruangTemplate: you have to call stmtAttribute method ' +
       'implemented by child only!');
   }
