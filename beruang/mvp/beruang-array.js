@@ -6,7 +6,7 @@ class extends base {
   }
 
   push(path, ...items) {//return new array length
-    let arr = this._getArray(path);
+    let arr = this.getArray(path);
     if(!arr) {
       return 0;
     }
@@ -17,7 +17,7 @@ class extends base {
   }
 
   splice(path, index, removeCount, ...items) {//return removed items
-    let arr = this._getArray(path);
+    let arr = this.getArray(path);
     if(!arr) {
       return 0;
     }
@@ -31,7 +31,7 @@ class extends base {
   }
 
   unshift(path, ...items) {//return new length
-    let arr = this._getArray(path);
+    let arr = this.getArray(path);
     if(!arr) {
       return 0;
     }
@@ -40,7 +40,7 @@ class extends base {
   }
 
   shift(path) {//return removed item
-    let arr = this._getArray(path);
+    let arr = this.getArray(path);
     if(!arr) {
       return null;
     }
@@ -49,8 +49,8 @@ class extends base {
     return ret;
   }
 
-  _getArray(path) {
-    let objFld = this._getObjField(path);
+  getArray(path) {
+    let objFld = this.getObjField(path);
     if(!objFld) {
       return null;
     }

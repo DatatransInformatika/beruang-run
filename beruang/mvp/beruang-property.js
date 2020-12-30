@@ -17,7 +17,7 @@ class extends BeruangArray(base) {
   }
 
   get(path) {
-    let objFld = this._getObjField(path);
+    let objFld = this.getObjField(path);
     if(!objFld) {
       return null;
     }
@@ -25,7 +25,7 @@ class extends BeruangArray(base) {
   }
 
   set(path, val) {
-    let objFld = this._getObjField(path);
+    let objFld = this.getObjField(path);
     if(objFld) {
       let oldVal = objFld.fld ? objFld.obj[objFld.fld] : objFld.obj;
       if(val!=oldVal) {
@@ -58,8 +58,8 @@ class extends BeruangArray(base) {
 
       if(validType) {
         Object.defineProperty(this, p,
-          { get:this._getter(p, v.type),
-            set:this._setter(p, v.type, v.observer, v.reflectToAttribute)
+          { get:this.getter(p, v.type),
+            set:this.setter(p, v.type, v.observer, v.reflectToAttribute)
           });
         if(typeof v.value === 'function') {
           v.value = v.value();
@@ -69,13 +69,13 @@ class extends BeruangArray(base) {
     }
   }
 
-  _getter(p, vt) {
+  getter(p, vt) {
     return ()=>{
       return this.prop[p];
     };
   }
 
-  _setter(p, vt, observer, reflectToAttr) {
+  setter(p, vt, observer, reflectToAttr) {
     return (val)=>{
       if(val===undefined) {
         val = null;
@@ -90,7 +90,7 @@ class extends BeruangArray(base) {
       }
 
       if(this.view) {
-        this._delayedUpdateNode(p);
+        this.delayedUpdateNode(p);
       }
 
       if(observer){
@@ -113,7 +113,7 @@ class extends BeruangArray(base) {
     };
   }
 
-  _delayedUpdateNode(prop) {
+  delayedUpdateNode(prop) {
     this._updatedProps = this._updatedProps || [];
     if(this._updatedProps.indexOf(prop)>-1){
       return;
@@ -130,7 +130,7 @@ class extends BeruangArray(base) {
       }, 50);
   }
 
-  _getObjField(path) {
+  getObjField(path) {
     let arr = path.split('.');
     let p0 = arr[0];
     let propKeys = Object.keys(this.prop);

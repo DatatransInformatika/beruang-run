@@ -17,7 +17,7 @@ class SamplePresenter extends BeruangPresenter(HTMLElement) {
       label:{
         type:String,
         value:'Abdul Yadi',
-        observer:'_labelChanged'
+        observer:'labelChanged'
       },
 
       address:{
@@ -65,7 +65,7 @@ class SamplePresenter extends BeruangPresenter(HTMLElement) {
     }
   }
 
-  _labelChanged(newVal, oldVal) {
+  labelChanged(newVal, oldVal) {
     //console.log(newVal, oldVal);
   }
 }

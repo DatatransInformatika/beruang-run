@@ -41,7 +41,7 @@ class extends base {
     return val;
   }
 
-  _arrayTemplate(node) {
+  arrayTemplate(node) {
     let tmplEl = node;
     while(tmplEl) {
       if(tmplEl.arrayTemplate){
@@ -52,7 +52,7 @@ class extends base {
     return null;
   }
 
-  _arrayValue(path, arrTmpl, view) {
+  arrayValue(path, arrTmpl, view) {
     if(path===arrTmpl.node.tmpl.fldIdx) {
       return {'val':arrTmpl.idx};
     } else {
@@ -69,7 +69,7 @@ class extends base {
     return null;
   }
 
-  _objPathValue(obj, pathArr) {
+  objPathValue(obj, pathArr) {
     for(let i=1, len=pathArr.length; obj!=null && i<len;i++) {
       if(obj.hasOwnProperty(pathArr[i])) {
         obj = obj[pathArr[i]];
@@ -83,9 +83,9 @@ class extends base {
   tmplSimple(stmt, node, presenter, propNodeMap) {
     let path  = stmt.trim();
 
-    let arrTmpl = this._arrayTemplate(node);
+    let arrTmpl = this.arrayTemplate(node);
     if(arrTmpl){
-      let obj = this._arrayValue(path, arrTmpl, presenter.view);
+      let obj = this.arrayValue(path, arrTmpl, presenter.view);
       if(obj) {
         let term = {
           'stmt':stmt,
@@ -108,7 +108,7 @@ class extends base {
     let p0 = pathArr[0];
 
     if(presenter.prop.hasOwnProperty(p0)) {
-      let val = this._objPathValue(presenter[p0], pathArr);
+      let val = this.objPathValue(presenter[p0], pathArr);
       let term = {
         'stmt':stmt,
         'fname':null,
@@ -118,7 +118,7 @@ class extends base {
         'negs':[neg],
         'vals':[val]
       };
-      this._propNodeMap(propNodeMap, p0, node);
+      this.propNodeMapInsert(propNodeMap, p0, node);
       return {'term':term, 'props':[p0]};
     }
     return null;
@@ -130,7 +130,7 @@ class extends base {
       return null;
     }
 
-    let arrTmpl = this._arrayTemplate(node);
+    let arrTmpl = this.arrayTemplate(node);
 
     let fname = arr[1];
     let neg = fname.substring(0,1)==='!';
@@ -161,7 +161,7 @@ class extends base {
         }
 
         if(arrTmpl) {
-          let obj = this._arrayValue(path, arrTmpl, presenter.view);
+          let obj = this.arrayValue(path, arrTmpl, presenter.view);
           if(obj) {
             term['args'].push(path);
             term['paths'].push(path),
@@ -176,10 +176,10 @@ class extends base {
         term['args'].push(p0);
         term['paths'].push(path);
         if(presenter.prop.hasOwnProperty(p0)) {
-            let val = this._objPathValue(presenter[p0], pathArr);
+            let val = this.objPathValue(presenter[p0], pathArr);
             term['negs'].push(neg);
             term['vals'].push(val);
-            this._propNodeMap(propNodeMap, p0, node);
+            this.propNodeMapInsert(propNodeMap, p0, node);
             props.push(p0);
         } else {
             term['negs'].push(false);
@@ -188,28 +188,6 @@ class extends base {
       });
     }
     return {'term':term, 'props':props};
-  }
-
-  substitute(node, p, val, pathmatch) {
-    let hit = false;
-    node.terms.forEach((term, i) => {
-      term.args.forEach((arg, j) => {
-        if(arg!=p) {
-          return;
-        }
-        let path = term.paths[j];
-        if(pathmatch && pathmatch!=path) {
-          return;
-        }
-        let _val = this._objPathValue(val, path.split('.'));
-        if(term.negs[j]) {
-          _val = !this.coercer.toBoolean(_val);
-        }
-        term.vals[j] = _val;
-        hit = true;
-      });
-    });
-    return hit;
   }
 
   pathSubstitute(node, path, val) {
@@ -222,7 +200,7 @@ class extends base {
           return;
         }
         if(term.paths[j]==path) {
-          let _val = this._objPathValue(val, path.split('.'));
+          let _val = this.objPathValue(val, path.split('.'));
           if(term.negs[j]) {
             _val = !this.coercer.toBoolean(_val);
           }
@@ -232,26 +210,9 @@ class extends base {
       });
     });
     return hit;
-/*      term.args.forEach((arg, j) => {
-        if(arg!=p) {
-          return;
-        }
-        let path = term.paths[j];
-        if(pathmatch && pathmatch!=path) {
-          return;
-        }
-        let _val = this._objPathValue(val, path.split('.'));
-        if(term.negs[j]) {
-          _val = !this.coercer.toBoolean(_val);
-        }
-        term.vals[j] = _val;
-        hit = true;
-      });
-    });*/
-    //return hit;
   }
 
-  _propNodeMap(map, prop, node) {
+  propNodeMapInsert(map, prop, node) {
     let arr = map[prop] || [];
     if(arr.indexOf(node)==-1){
       arr.push(node);

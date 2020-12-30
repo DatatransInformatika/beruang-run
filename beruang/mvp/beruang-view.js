@@ -57,11 +57,11 @@ class extends base {
 
   parseTemplate(root, nodes) {
     root.childNodes.forEach((node, i) => {
-      this._parseNode(node, nodes);
+      this.parseNode(node, nodes);
     });
   }
 
-  _parseNode(node, nodes) {
+  parseNode(node, nodes) {
     if(node.localName==='style') {
       //parse style here
     } else {
@@ -86,42 +86,38 @@ class extends base {
 
   updateNode(props) {
     let rslt = [];
-    props.forEach((p, i) => {
-        this._updateNode(p, rslt);
+    props.forEach((path, i) => {
+      let obj = this.pathNodes( path, (node)=>true );
+      if(obj.finalNodes.length>0) {
+        obj.finalNodes.forEach((node, i) => {
+          let val = this.presenter.get(path);
+          if(node.nodeType===3/*Text*/) {
+            if(this.textNode.pathSubstitute(node, path, val)){
+              rslt.push(node);
+            }
+          } else if(node.nodeType==1/*Element*/) {
+            if(node.localName==='template') {
+              if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {//switch
+                if(this.tmplSwitch.pathSubstitute(node, path, val)){
+                  rslt.push(node);
+                }
+              } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
+                if(this.tmplArray.pathSubstitute(node, path, val)){
+                  rslt.push(node);
+                }
+              }
+            } else {
+
+            }
+          }
+        });
+        if(obj.pathNodes>0) {
+          rslt = rslt.concat(obj.pathNodes);
+        }
+      }
     });
     if(rslt.length>0) {
         this.solveNode(rslt);
-    }
-  }
-
-  _updateNode(path, rslt) {
-    let obj = this._pathNodes( path, (node)=>true );
-    if(obj.finalNodes.length>0) {
-      obj.finalNodes.forEach((node, i) => {
-        let val = this.presenter.get(path);
-        if(node.nodeType===3/*Text*/) {
-          if(this.textNode.pathSubstitute(node, path, val)){
-            rslt.push(node);
-          }
-        } else if(node.nodeType==1/*Element*/) {
-          if(node.localName==='template') {
-            if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {//switch
-              if(this.tmplSwitch.pathSubstitute(node, path, val)){
-                rslt.push(node);
-              }
-            } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
-              if(this.tmplArray.pathSubstitute(node, path, val)){
-                rslt.push(node);
-              }
-            }
-          } else {
-
-          }
-        }
-      });
-      if(obj.pathNodes>0) {
-        rslt = rslt.concat(obj.pathNodes);
-      }
     }
   }
 
@@ -147,15 +143,15 @@ class extends base {
       }
     });
 
-    this._solveClones(clones);
+    this.solveClones(clones);
   }
 
   arrayPush(path, startIdx, count) {
-    let obj = this._pathNodes( path, (node)=>node.hasAttribute &&
+    let obj = this.pathNodes( path, (node)=>node.hasAttribute &&
         node.hasAttribute(this.tmplArray.stmtAttribute()) );
     if(obj.finalNodes.length>0) {
       let clones = this.tmplArray.push(obj.finalNodes, startIdx, count);
-      this._solveClones(clones);
+      this.solveClones(clones);
       if(obj.pathNodes.length>0) {
         this.solveNode(obj.pathNodes);
       }
@@ -163,7 +159,7 @@ class extends base {
   }
 
   arraySplice(path, startIdx, count, removeCount) {
-    let obj = this._pathNodes( path, (node)=>node.hasAttribute &&
+    let obj = this.pathNodes( path, (node)=>node.hasAttribute &&
       node.hasAttribute(this.tmplArray.stmtAttribute()) );
     if(obj.finalNodes.length>0) {
       let rslt = this.tmplArray.splice(obj.finalNodes, startIdx, count,
@@ -171,34 +167,33 @@ class extends base {
       if(rslt.substitutes.length>0) {
         obj.pathNodes = obj.pathNodes.concat(rslt.substitutes);
       }
-      this._solveClones(rslt.clones);
+      this.solveClones(rslt.clones);
       if(obj.pathNodes.length>0) {
         this.solveNode(obj.pathNodes);
       }
     }
   }
 
-  _solveClones(clones) {
+  solveClones(clones) {
     if(clones.length>0) {
       let nodes = [];
       clones.forEach((clone, i) => {
         let ns = [];
-        this._parseNode(clone, ns);
+        this.parseNode(clone, ns);
         nodes = nodes.concat(ns);
       });
       this.solveNode(nodes);
     }
   }
 
-///////////////////////////////////////////////////////////////////
-  _pathNodes(path, finalMatchFunc) {
+  pathNodes(path, finalMatchFunc) {
     let paths = path.split('.');
     let result = {'pathNodes':[], 'finalNodes':[], 'finalPath':paths[0]};
-    this._pathNodesDo(paths, 1, this.propNodeMap[paths[0]], finalMatchFunc, result);
+    this.pathNodesDo(paths, 1, this.propNodeMap[paths[0]], finalMatchFunc, result);
     return result;
   }
 
-  _pathNodesDo(paths, startIdx, nodes, finalMatchFunc, result)
+  pathNodesDo(paths, startIdx, nodes, finalMatchFunc, result)
   {
     if(!(nodes && nodes.length>0)){
       return;
@@ -228,11 +223,11 @@ class extends base {
             return;
           }
           let nexts = [];
-          this.tmplArray._termedClones(node,
-            (_node, _arrayTemplate)=>_arrayTemplate.idx==arrIdx,
+          this.tmplArray.termedClones(node,
+            (_node, arrTmpl)=>arrTmpl.idx==arrIdx,
             node.clones, nexts, null);
           result.finalPath = node.tmpl.fldItem;
-          this._pathNodesDo(paths, startIdx+1, nexts, finalMatchFunc, result);
+          this.pathNodesDo(paths, startIdx+1, nexts, finalMatchFunc, result);
         }
       } else {
         if(startIdx==1 && startIdx>=paths.length) {
@@ -252,5 +247,4 @@ class extends base {
       }
     });
   }
-/////////////////////////////////////////////////////////////
 }

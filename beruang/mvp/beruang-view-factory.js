@@ -6,7 +6,7 @@ class extends base {
   static _viewWait = {};
 
   static createView(templateCallback) {
-    let clsName = this._getViewClsName();
+    let clsName = this.getViewClsName();
     let vc = this._viewClass[clsName];
     if(vc) {
       let t = this._viewTmpl[clsName];
@@ -22,7 +22,7 @@ class extends base {
       }, 100);
     } else {
       this._viewWait[clsName] = true;
-      let js = this._getViewJs(window.formfactor);
+      let js = this.getViewJs(window.formfactor);
       import(js).then((module) => {
         vc = module[clsName];
         this._viewClass[clsName] = vc;
@@ -36,14 +36,14 @@ class extends base {
   }
 
 //abstract:BEGIN
-  static _getViewClsName() {
+  static getViewClsName() {
     throw new Error('BeruangViewFactory: you have to call '
-      + '_getViewClsName method implemented by child only!');
+      + 'getViewClsName method implemented by child only!');
   }
 
-  static _getViewJs(formfactor) {
+  static getViewJs(formfactor) {
     throw new Error('BeruangViewFactory: you have to call '
-      + '_getViewJs method implemented by child only!');
+      + 'getViewJs method implemented by child only!');
   }
 //abstract:END
 }

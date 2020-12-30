@@ -32,19 +32,19 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
 
     node.clones = [];
     val.forEach((item, i) => {
-      this._populate(node, i, node, node.clones.length, null);
+      this.populate(node, i, node, node.clones.length, null);
     });
   }
 
   push(nodes, startIdx, count) {
     let clones = [];
     nodes.forEach((node, i) => {
-      let obj = this._getFirstCloneIdx(node.clones, startIdx);
+      let obj = this.getFirstCloneIdx(node.clones, startIdx);
       let beforeNode = obj ? obj.clone : node;
       let spliceIndex = obj ? obj.arrayIndex : node.clones.length;
       for(let i=startIdx, stop=startIdx+count; i<stop; i++) {
         let c0 = node.clones.length;
-        this._populate(node, i, beforeNode, spliceIndex, clones);
+        this.populate(node, i, beforeNode, spliceIndex, clones);
         let offset = node.clones.length -  c0;
         spliceIndex += offset;
         if(beforeNode!=node) {
@@ -62,7 +62,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
         return;
       }
 
-      let nextClone = this._getFirstCloneIdx(node.clones,
+      let nextClone = this.getFirstCloneIdx(node.clones,
         startIdx + (removeCount>0 ? 1 : 0));
 
     //removeFirst
@@ -73,7 +73,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
           for(let j=node.clones.length-1; j>=0; j--) {
             let clone = node.clones[j];
             if(clone.arrayTemplate.idx==idx){
-              this._removeClone(clone, propNodeMap);
+              this.removeClone(clone, propNodeMap);
               node.clones.splice(j, 1);
             }
           }
@@ -82,12 +82,12 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
 
     //insert
       if(insertCount>0) {
-        let obj = this._getFirstCloneIdx(node.clones, startIdx + removeCount);
+        let obj = this.getFirstCloneIdx(node.clones, startIdx + removeCount);
         let beforeNode = obj ? obj.clone : node;
         let spliceIndex = obj ? obj.arrayIndex : node.clones.length;
         for(let i=startIdx, stop=startIdx+insertCount; i<stop; i++) {
           let c0 = node.clones.length;
-          this._populate(node, i, beforeNode, spliceIndex, ret.clones);
+          this.populate(node, i, beforeNode, spliceIndex, ret.clones);
           let offset = node.clones.length -  c0;
           spliceIndex += offset;
           if(beforeNode!=node) {
@@ -108,13 +108,13 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
             let fldIdx = node.tmpl.fldIdx;
             clone.arrayTemplate.idx = newIdx;
             if(clone.term) {
-              this.substitute(clone, fldIdx, newIdx, fldIdx);
+              this.pathSubstitute(clone, fldIdx, newIdx);
               ret.substitutes.push(clone);
             }
             if(clone.childNodes && clone.childNodes.length>0) {
-              this._termedClones(node,
-                (_node, _arrayTemplate)=>{
-                  return this.substitute(_node, fldIdx, newIdx, fldIdx);
+              this.termedClones(node,
+                (_node, arrTmpl)=>{
+                  return this.pathSubstitute(_node, fldIdx, newIdx);
                 },
                 clone.childNodes, ret.substitutes, null);
             }
@@ -126,7 +126,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     return ret;
   }
 
-  _getFirstCloneIdx(clones, index) {
+  getFirstCloneIdx(clones, index) {
     for(let i=0, len=clones.length; i<len; i++) {
       let n = clones[i];
       if(n.arrayTemplate.idx==index) {
@@ -136,7 +136,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     return null;
   }
 
-  _populate(template, i, beforeNode, spliceIndex, clones) {
+  populate(template, i, beforeNode, spliceIndex, clones) {
     let clone = template.content.cloneNode(true);
     let count = clone.childNodes ? clone.childNodes.length : 0;
     if(count>0) {
@@ -154,10 +154,10 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
     }
   }
 
-  _termedClones(templateNode, equalFunc, nodes, termedNodes, arrayTmplClones)
+  termedClones(templateNode, equalFunc, nodes, termedNodes, arrayTmplClones)
   {
     nodes.forEach((node, i) => {
-      let arrayTemplate = this._arrayTemplate(node);
+      let arrayTemplate = this.arrayTemplate(node);
       if(arrayTemplate && arrayTemplate.node===templateNode
         && equalFunc(node, arrayTemplate))
       {
@@ -173,7 +173,7 @@ class BeruangTemplateArray extends BeruangTemplate(Object) {
         }
       }
       if(node.childNodes && node.childNodes.length>0) {
-        this._termedClones(templateNode, equalFunc, node.childNodes,
+        this.termedClones(templateNode, equalFunc, node.childNodes,
           termedNodes, arrayTmplClones);//recursive
       }
     });

@@ -47,11 +47,11 @@ class extends BeruangNodeResolver(base) {
 
   removeClones(clones, propNodeMap) {
     clones.forEach((clone, i) => {
-      this._removeClone(clone, propNodeMap);
+      this.removeClone(clone, propNodeMap);
     });
   }
 
-  _removeClone(clone, propNodeMap) {
+  removeClone(clone, propNodeMap) {
     this.removePropNode(clone, propNodeMap);
     clone.parentNode.removeChild(clone);
     if(clone.clones) {
