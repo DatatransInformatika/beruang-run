@@ -12,6 +12,20 @@ class SampleView extends BeruangView(Object) {
     :host {
       font-size:20px;
       font-weight:bold;
+      @apply --layout-vertical;
+      --wordwrap: {
+        white-space: normal;
+        overflow: hidden;
+        text-overflow:clip;
+        word-wrap:break-word;
+		  }
+    }
+    :host button {
+      color:red;
+    }
+
+    :host > input {
+      color:green;
     }
     </style>
 <input value="[[label:input]]"></input>

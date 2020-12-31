@@ -1,3 +1,4 @@
+import {BeruangStyle} from './noderesolver/beruang-style.js';
 import {BeruangTextNode} from './noderesolver/beruang-textnode.js';
 import {BeruangTemplateSwitch} from './noderesolver/beruang-template-switch.js';
 import {BeruangTemplateArray} from './noderesolver/beruang-template-array.js';
@@ -25,6 +26,13 @@ class extends base {
 
   get propNodeMap() {
     return this._propNodeMap;
+  }
+
+  get style() {
+    if(!this._style) {
+      this._style = new BeruangStyle();
+    }
+    return this._style;
   }
 
   get textNode() {
@@ -63,7 +71,7 @@ class extends base {
 
   parseNode(node, nodes) {
     if(node.localName==='style') {
-      //parse style here
+      this.style.parse(node);
     } else {
       if(node.nodeType===3/*Text*/) {
         this.textNode.parse(node, this.presenter, this.propNodeMap);

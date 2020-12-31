@@ -16,14 +16,24 @@ class extends base {
     return arr.length;
   }
 
+  pop(path) {//return removed item
+    let arr = this.getArray(path);
+    if(!(arr && arr.length>0)) {
+      return null;
+    }
+    let ret = arr.pop();
+    this.view.arraySplice(path, arr.length-1, 0, 1);
+    return ret;
+  }
+
   splice(path, index, removeCount, ...items) {//return removed items
     let arr = this.getArray(path);
     if(!arr) {
       return 0;
     }
     if(index >= arr.length) {
-      this.push(path, ...items);
-      return 0;
+      removeCount = 0;
+      index = arr.length;
     }
     let removes = arr.splice(index, removeCount, ...items);
     this.view.arraySplice(path, index, items.length, removeCount);
