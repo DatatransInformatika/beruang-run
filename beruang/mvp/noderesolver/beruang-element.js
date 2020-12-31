@@ -18,8 +18,7 @@ class BeruangElement extends BeruangNodeResolver(Object) {
         let stmt = vs[0];
         let obj = this.tmplSimple(stmt, node, presenter, propNodeMap);
         if(obj) {//simple
-          if(att==='value'&& vs.length>1) {
-            let path = obj.term.paths[0];
+          if(vs.length>1) {
             node.addEventListener(vs[1], ()=>{
               let arrPath = this.arrayPath(node);
               let path = arrPath ? arrPath : obj.term.paths[0];
@@ -30,7 +29,9 @@ class BeruangElement extends BeruangNodeResolver(Object) {
           obj = this.tmplFunc(stmt, node, presenter, propNodeMap);
         }
         if(obj) {
-          obj.term.stmt = att; //replace with attribute
+          let camel = this.camelize(att);
+          obj.term.property = presenter.hasOwnProperty(camel);
+          obj.term.stmt = obj.term.property ? camel : att;
           if(!node.terms) {
             node.terms = [];
             node.props = [];
@@ -49,7 +50,11 @@ class BeruangElement extends BeruangNodeResolver(Object) {
       if(term.neg){
         val = !this.coercer.toBoolean(val);
       }
-      node.setAttribute(term.stmt, val);
+      if(term.property) {
+        node[term.stmt] = val;
+      } else {
+        node.setAttribute(term.stmt, val);
+      }
     });
   }
 

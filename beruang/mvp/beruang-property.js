@@ -61,10 +61,21 @@ class extends BeruangArray(base) {
           { get:this.getter(p, v.type),
             set:this.setter(p, v.type, v.observer, v.reflectToAttribute)
           });
-        if(typeof v.value === 'function') {
-          v.value = v.value();
+
+        let _v;
+
+        let attr = this.toAttribute(p);
+        if( this.hasAttribute(attr) ) {
+            _v = this.getAttribute(attr);
+        } else {
+            if(typeof v.value === 'function') {
+              _v = v.value();
+            } else {
+              _v = v.value;
+            }
         }
-        this[p] = this.coercer.coerce(v.type, v.value);
+
+        this[p] = this.coercer.coerce(v.type, _v);
       }
     }
   }
@@ -98,7 +109,7 @@ class extends BeruangArray(base) {
       }
 
       if(reflectToAttr) {
-        let attr = p.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+        let attr = this.toAttribute(p);
         if(vt===Boolean) {
           if(val){
             this.setAttribute(attr, '');
@@ -111,6 +122,10 @@ class extends BeruangArray(base) {
         }
       }
     };
+  }
+
+  toAttribute(s) {
+    return s.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
   }
 
   delayedUpdateNode(prop) {
