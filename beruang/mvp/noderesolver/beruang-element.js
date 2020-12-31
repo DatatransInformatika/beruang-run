@@ -55,7 +55,7 @@ class BeruangElement extends BeruangNodeResolver(Object) {
     }
     if(obj) {
       let camel = this.camelize(attr);
-      obj.term.property = presenter.hasOwnProperty(camel);
+      obj.term.property = node.hasOwnProperty(camel);
       obj.term.stmt = obj.term.property ? camel : attr;
       if(!node.terms) {
         node.terms = [];
