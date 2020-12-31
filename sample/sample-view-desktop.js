@@ -14,6 +14,7 @@ class SampleView extends BeruangView(Object) {
       font-weight:bold;
     }
     </style>
+<input value="[[label:input]]"></input>    
     <div><div>ABC</div></div>
 [[address]]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>[[label]]
 Desktop [[large (123, label, ADUH)]] at [[address]]

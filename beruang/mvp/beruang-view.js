@@ -75,6 +75,7 @@ class extends base {
             this.tmplArray.parse(node, this.presenter, this.propNodeMap);
           }
         } else {
+          this.element.parse(node, this.presenter, this.propNodeMap);
           this.parseTemplate(node, nodes);//recursive
         }
       }
@@ -107,7 +108,9 @@ class extends base {
                 }
               }
             } else {
-
+              if(this.element.pathSubstitute(node, obj.finalPath, val)){
+                rslt.push(node);
+              }
             }
           }
         });
@@ -138,7 +141,7 @@ class extends base {
             clones = clones.concat(node.clones);
           }
         } else {
-
+          this.element.solve(this, node, this.propNodeMap);
         }
       }
     });

@@ -215,6 +215,12 @@ class extends base {
     }
   }
 
+  camelize(str) {
+    return str.replace(/^([A-Z])|[\s-_]+(\w)/g,
+      (match, p1, p2, offset) => p2 ? p2.toUpperCase() : p1.toLowerCase()
+  	);
+  }
+  
 //abstract:BEGIN
   parse(node, presenter, propNodeMap) {
     throw new Error('BeruangNodeResolver: you have to call parse method ' +
