@@ -14,7 +14,7 @@ class SampleView extends BeruangView(Object) {
       font-weight:bold;
     }
     </style>
-<input value="[[label:input]]"></input>    
+<input value="[[label:input]]"></input>
     <div><div>ABC</div></div>
 [[address]]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>[[label]]
 Desktop [[large (123, label, ADUH)]] at [[address]]
@@ -25,9 +25,11 @@ once more [[large(123, label, ADUH)]]</b>
       <div>simpleArray size 2: [[arrayLen(simpleArray)]]</div>
     </div>
     <template data-array="simpleArray" data-item="n" data-index="i">
-    <div>[[i]] [[n]] [[plusTen(i)]]</div>
+    <input check value="[[n:input]]"></input>
+    <div>[[label]] [[i]] [[n]] [[plusTen(i)]]</div>
     </template>
     <template data-array="personArray" data-item="p" data-index="j">
+      <input check value="[[p.name:input]]"></input>
       <div>[[j]] [[p.name]]</div>
       <template data-switch="show">cond [[address]] <div>conditional [[label]]</div></template>
     </template>
@@ -37,6 +39,7 @@ once more [[large(123, label, ADUH)]]</b>
         <div>[[j]] [[p.label]]</div>
         <div>p.sub array size: [[arrayLen(p.sub)]]</div>
         <template data-array="p.sub" data-item="q" data-index="k">
+          <input check value="[[q.sub1:input]]"></input>
           <div>[[k]] [[q.sub1]] [[q.sub2]]</div>
         </template>
       </template>

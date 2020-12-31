@@ -69,6 +69,30 @@ class extends base {
     return null;
   }
 
+  arrayPath(node) {
+    let arrTmpl = this.arrayTemplate(node);
+    if(!arrTmpl) {
+      return null;
+    }
+    let path = node.terms[0].paths[0];
+    return this.arrayPathDo(arrTmpl, path);
+  }
+
+  arrayPathDo(arrTmpl, path) {
+    if(!arrTmpl) {
+      return path;
+    }
+    let rootPath = arrTmpl.node.terms[0].paths[0] + '.' + arrTmpl.idx;
+    let item = arrTmpl.node.getAttribute('data-item') ;
+    let paths = path.split('.');
+    if( paths[0]===item ) {
+      paths[0] = rootPath;
+    }
+    path = paths.join('.');
+    let next = this.arrayTemplate(arrTmpl.node);
+    return this.arrayPathDo(next, path);
+  }
+
   objPathValue(obj, pathArr) {
     for(let i=1, len=pathArr.length; obj!=null && i<len;i++) {
       if(obj.hasOwnProperty(pathArr[i])) {
@@ -220,7 +244,7 @@ class extends base {
       (match, p1, p2, offset) => p2 ? p2.toUpperCase() : p1.toLowerCase()
   	);
   }
-  
+
 //abstract:BEGIN
   parse(node, presenter, propNodeMap) {
     throw new Error('BeruangNodeResolver: you have to call parse method ' +

@@ -31,11 +31,8 @@ class extends BeruangArray(base) {
       if(val!=oldVal) {
         if(objFld.fld) {
           objFld.obj[objFld.fld] = val;
-console.log('set-1', objFld.prop);
-          //this.view.updateNode([objFld.prop]);
           this.view.updateNode([path]);
         } else {
-console.log('set-2', objFld.prop);
           this[objFld.prop] = val;
         }
       }

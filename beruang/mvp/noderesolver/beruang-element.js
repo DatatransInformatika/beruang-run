@@ -21,6 +21,8 @@ class BeruangElement extends BeruangNodeResolver(Object) {
           if(att==='value'&& vs.length>1) {
             let path = obj.term.paths[0];
             node.addEventListener(vs[1], ()=>{
+              let arrPath = this.arrayPath(node);
+              let path = arrPath ? arrPath : obj.term.paths[0];
               presenter.set(path, node.value);
             });
           }
