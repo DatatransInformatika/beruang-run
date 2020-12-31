@@ -14,6 +14,7 @@ class SampleViewFactory extends BeruangViewFactory(Object) {
       case 'phone':
       case 'table':
         src = '/beruang/sample/sample-view-phone.js';
+        //src = '/beruang/sample/sample-view-desktop.js';
         break;
       case 'desktop':
       default:

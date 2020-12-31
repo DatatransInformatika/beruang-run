@@ -15,6 +15,7 @@ class SampleView extends BeruangView(Object) {
     }
     </style>
 <input value="[[label:input]]"></input>
+<button on-hit="hit">click [[label]]</button>
     <div><div>ABC</div></div>
 [[address]]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>[[label]]
 Desktop [[large (123, label, ADUH)]] at [[address]]
@@ -59,6 +60,9 @@ once more [[large(123, label, ADUH)]]</b>
     return arr ? arr.length : 0;
   }
 
+  hit(e) {
+    console.log('hit');
+  }
 }
 
 export {SampleView};
