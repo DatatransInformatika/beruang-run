@@ -71,7 +71,7 @@ class extends base {
 
   parseNode(node, nodes) {
     if(node.localName==='style') {
-      this.style.parse(node);
+      this.style.parse(node, this.presenter);
       nodes.push(node);
     } else {
       if(node.nodeType===3/*Text*/) {

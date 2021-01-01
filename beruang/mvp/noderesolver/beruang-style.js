@@ -2,15 +2,21 @@ class BeruangStyle {
 
   constructor() {}
 
-  parse(node) {
+  parse(node, presenter) {
     node.rules = node.textContent.match(/([^{]+{[^{]*})/g);
+    node.dynStartIndex = node.rules.length;
+    let rslt = this.parseDo(node.rules, presenter);
+    if(rslt.inject) {
+      node.textContent = rslt.stmt;
+    }
   }
 
-  solve(node, presenter) {
-    let s = '';
-    node.rules.forEach((rule, i) => {
-      let matches = rule.match(/(\s*\S+\s*[:]{2}part\s*[(][^(]+[)])\s*{([^{]*)}/);
+  parseDo(rules, presenter) {
+    let rslt = {'inject':false, 'stmt':''};
+    rules.forEach((rule, i) => {
+      let matches = rule.match(/(\s*[:]host\s*[:]{2}part\s*[(][^(]+[)])\s*{([^{]*)}/);
       if(matches && matches.length>2) {
+        rslt.inject = true;
         presenter.injectedStyles = presenter.injectedStyles || [];
         let selector = matches[1].replace(':host', presenter.localName);
         if(presenter.injectedStyles.indexOf(selector)===-1) {
@@ -19,10 +25,16 @@ class BeruangStyle {
           presenter.injectedStyles.push(selector);
         }
       } else {
-          s += rule;
+          rslt.stmt += rule;
       }
     });
-    node.textContent = s;
+    return rslt;
+  }
+
+  solve(node, presenter) {
+    if(node.rules.length<=node.dynStartIndex) {
+      return;
+    }
   }
 
   ensureDocSheet() {
