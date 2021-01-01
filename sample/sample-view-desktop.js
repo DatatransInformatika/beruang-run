@@ -1,5 +1,5 @@
 import {BeruangView} from '../beruang/mvp/view/beruang-view.js';
-import '../beruang/mvp/view/element/style/beruang-layout.js';
+import '../beruang/mvp/view/style/beruang-layout.js';
 
 class SampleView extends BeruangView(Object) {
 
