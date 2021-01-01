@@ -12,31 +12,34 @@ class SampleView extends BeruangView(Object) {
     :host {
       font-size:20px;
       font-weight:bold;
-      @apply --layout-vertical;
-      --wordwrap: {
-        white-space: normal;
-        overflow: hidden;
-        text-overflow:clip;
-        word-wrap:break-word;
-		  }
+      --button-color:blue;
     }
+
     :host button {
-      color:red;
+      color:var(--button-color);
     }
 
     :host > input {
       color:green;
     }
+
+    :host([my-ctrl=button][my-clr=yellow]) button {
+      color:yellow;
+    }
+
+    :host::part(alert) {
+      color:red;
+    }
     </style>
 <input value="[[label:input]]"></input>
 <button on-hit="hit">click [[label]]</button>
-    <div><div>ABC</div></div>
+    <div><div part="alert">ABC</div></div>
 [[address]]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>[[label]]
 Desktop [[large (123, label, ADUH)]] at [[address]]
 once more [[large(123, label, ADUH)]]</b>
     <slot></slot>
     <template data-switch="!show">cond [[address]] <div>conditional [[label]]</div></template>
-    <div>simpleArray size: [[arrayLen(simpleArray)]]
+    <div part="alert">simpleArray size: [[arrayLen(simpleArray)]]
       <div>simpleArray size 2: [[arrayLen(simpleArray)]]</div>
     </div>
     <template data-array="simpleArray" data-item="n" data-index="i">

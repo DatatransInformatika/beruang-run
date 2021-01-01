@@ -72,6 +72,7 @@ class extends base {
   parseNode(node, nodes) {
     if(node.localName==='style') {
       this.style.parse(node);
+      nodes.push(node);
     } else {
       if(node.nodeType===3/*Text*/) {
         this.textNode.parse(node, this.presenter, this.propNodeMap);
@@ -136,24 +137,27 @@ class extends base {
     let clones = [];
 
     nodes.forEach((node, i) => {
-      if(node.nodeType===3/*Text*/) {
-        this.textNode.solve(this, node, this.propNodeMap);
-      } else if(node.nodeType==1/*Element*/) {
-        if(node.localName==='template') {
-          if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {
-            this.tmplSwitch.solve(this, node, this.propNodeMap);
-          } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
-            this.tmplArray.solve(this, node, this.propNodeMap);
+      if(node.localName==='style') {
+        this.style.solve(node, this.presenter);
+      } else {
+        if(node.nodeType===3/*Text*/) {
+          this.textNode.solve(this, node, this.propNodeMap);
+        } else if(node.nodeType==1/*Element*/) {
+          if(node.localName==='template') {
+            if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {
+              this.tmplSwitch.solve(this, node, this.propNodeMap);
+            } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
+              this.tmplArray.solve(this, node, this.propNodeMap);
+            }
+            if(node.clones) {
+              clones = clones.concat(node.clones);
+            }
+          } else {
+            this.element.solve(this, node, this.propNodeMap);
           }
-          if(node.clones) {
-            clones = clones.concat(node.clones);
-          }
-        } else {
-          this.element.solve(this, node, this.propNodeMap);
         }
       }
     });
-
     this.solveClones(clones);
   }
 

@@ -3,63 +3,47 @@ class BeruangStyle {
   constructor() {}
 
   parse(node) {
+    node.rules = node.textContent.match(/([^{]+{[^{]*})/g);
+  }
 
-/*    :host { <key>
-      font-size:20px; <item0 key:value>
-      font-weight:bold; <item1 key:value>
-      @apply --layout-vertical; <expand0 key:value>
-      color:var(--lightgray);
-      --wordwrap: {  <term0: key:[list-of-item]>
-        white-space: normal; <term0[--wordwrap]: key:list-of-item>
-        overflow: hidden;
-        text-overflow:clip;
-        word-wrap:break-word;
-        @apply --small-font;
-        color:var(--red);
-		  }
+  solve(node, presenter) {
+    let s = '';
+    node.rules.forEach((rule, i) => {
+      let matches = rule.match(/(\s*\S+\s*[:]{2}part\s*[(][^(]+[)])\s*{([^{]*)}/);
+      if(matches && matches.length>2) {
+        presenter.injectedStyles = presenter.injectedStyles || [];
+        let selector = matches[1].replace(':host', presenter.localName);
+        if(presenter.injectedStyles.indexOf(selector)===-1) {
+          let css = this.ensureDocSheet();
+          this.addDocRule(css, selector, matches[2], 0);
+          presenter.injectedStyles.push(selector);
+        }
+      } else {
+          s += rule;
+      }
+    });
+    node.textContent = s;
+  }
+
+  ensureDocSheet() {
+    let css = document.styleSheets;
+    if(css.length==0) {
+      let style = document.createElement("style");
+      style.appendChild(document.createTextNode(""));//WebKit need this
+      document.head.appendChild(style);
+      css = document.styleSheets;
     }
-
-[
-  0:{
-    'key':':host'
-    'rule':[
-      0:{'type':'fixed','key':'font-size','val':'20px'}
-      1:{'type':'fixed','key':'font-weight','val':'bold'}
-      2:{'type':'apply','val':'--layout-vertical'}
-      3:{'type':'var','key':'color','val':':var(--lightgray)'}
-      4:{'type':'rule','key':'--wordwrap',
-        'rule':[
-          0:{'type':'item','key':'white-space','val':'normal','symbol':false},
-          1:{'type':'item','key':'overflow','val':'hidden','symbol':false},
-          2:{'type':'item','key':'text-overflow','clip','symbol':false},
-          3:{'type':'item','key':'word-wrap:break-word'},
-          4:{'type':'apply','val':'--small-font'},
-          5:{'type':'var','key':'color','val':':var(--red)}'
-        ]}
-    ]
-  }
-]
-*/
-  //step 1: parse text into object
-  //collect external variable
-
-
-
-    //let obj;
-    //let s = Array.from(node.textContent);//.toCharArray();
-
-
-
-
-    //let s = [...node.textContent];
-
-    //console.log(s);
-    /*node.textContent.toCharArray().forEach((c, i) => {
-      console.log(c);
-    });*/
-
+    return css[css.length-1];
   }
 
+  addDocRule(sheet, selector, rules, index) {
+  	if("insertRule" in sheet) {
+  		sheet.insertRule(selector + "{" + rules + "}", index);
+  	}
+  	else if("addRule" in sheet) {
+  		sheet.addRule(selector, rules, index);
+  	}
+  }
 }
 
 export {BeruangStyle};
