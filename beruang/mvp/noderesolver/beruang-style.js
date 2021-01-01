@@ -11,6 +11,14 @@ class BeruangStyle {
     }
   }
 
+  update(selector, rule, presenter) {
+
+  }
+
+  remove(selector) {
+
+  }
+
   parseDo(rules, presenter) {
     let rslt = {'inject':false, 'stmt':''};
     rules.forEach((rule, i) => {
@@ -20,8 +28,8 @@ class BeruangStyle {
         presenter.injectedStyles = presenter.injectedStyles || [];
         let selector = matches[1].replace(':host', presenter.localName);
         if(presenter.injectedStyles.indexOf(selector)===-1) {
-          let css = this.ensureDocSheet();
-          this.addDocRule(css, selector, matches[2], 0);
+          let sheet = this.ensureDocSheet();
+          this.addDocRule(sheet, selector, matches[2], 0);
           presenter.injectedStyles.push(selector);
         }
       } else {

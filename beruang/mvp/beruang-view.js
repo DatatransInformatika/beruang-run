@@ -177,6 +177,14 @@ class extends base {
     }
   }
 
+  styleUpdate(selector, rule) {
+    this.style.update(selector, rule, this.presenter);
+  }
+
+  styleRemove(selector) {
+    this.style.remove(selector);
+  }
+
   solveClones(clones) {
     if(clones.length>0) {
       let nodes = [];
