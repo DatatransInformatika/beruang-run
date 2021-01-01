@@ -1,6 +1,6 @@
-import {BeruangTemplate} from './beruang-template.js';
+import {BeruangTemplateResolver} from './beruang-template-resolver.js';
 
-class BeruangTemplateSwitch extends BeruangTemplate(Object) {
+class BeruangTemplateSwitch extends BeruangTemplateResolver(Object) {
   constructor() {
     super();
   }

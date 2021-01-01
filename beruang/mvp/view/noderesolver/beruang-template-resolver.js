@@ -1,6 +1,6 @@
 import {BeruangNodeResolver} from './beruang-node-resolver.js';
 
-export const BeruangTemplate = (base) =>
+export const BeruangTemplateResolver = (base) =>
 class extends BeruangNodeResolver(base) {
   constructor() {
     super();

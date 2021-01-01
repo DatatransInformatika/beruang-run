@@ -1,4 +1,5 @@
-import {BeruangView} from '../beruang/mvp/beruang-view.js';
+import {BeruangView} from '../beruang/mvp/view/beruang-view.js';
+import '../beruang/mvp/view/element/style/beruang-layout.js';
 
 class SampleView extends BeruangView(Object) {
 
@@ -8,7 +9,7 @@ class SampleView extends BeruangView(Object) {
 
   static getTemplate() {
     return `
-    <style>
+    <style include="beruang-layout  beruang-other">
     :host {
       font-size:20px;
       font-weight:bold;

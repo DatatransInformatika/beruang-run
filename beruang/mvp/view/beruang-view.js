@@ -1,8 +1,8 @@
-import {BeruangStyle} from './noderesolver/beruang-style.js';
+import {BeruangStyleResolver} from './noderesolver/beruang-style-resolver.js';
 import {BeruangTextNode} from './noderesolver/beruang-textnode.js';
 import {BeruangTemplateSwitch} from './noderesolver/beruang-template-switch.js';
 import {BeruangTemplateArray} from './noderesolver/beruang-template-array.js';
-import {BeruangElement} from './noderesolver/beruang-element.js';
+import {BeruangElementResolver} from './noderesolver/beruang-element-resolver.js';
 
 export const BeruangView = (base) =>
 class extends base {
@@ -30,7 +30,7 @@ class extends base {
 
   get style() {
     if(!this._style) {
-      this._style = new BeruangStyle();
+      this._style = new BeruangStyleResolver();
     }
     return this._style;
   }
@@ -58,7 +58,7 @@ class extends base {
 
   get element() {
     if(!this._element) {
-      this._element = new BeruangElement();
+      this._element = new BeruangElementResolver();
     }
     return this._element;
   }
@@ -70,27 +70,25 @@ class extends base {
   }
 
   parseNode(node, nodes) {
-    if(node.localName==='style') {
-      this.style.parse(node, this.presenter);
-      nodes.push(node);
-    } else {
-      if(node.nodeType===3/*Text*/) {
-        this.textNode.parse(node, this.presenter, this.propNodeMap);
-      } else if(node.nodeType==1/*Element*/) {
-        if(node.localName==='template') {
-          if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {
-            this.tmplSwitch.parse(node, this.presenter, this.propNodeMap);
-          } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
-            this.tmplArray.parse(node, this.presenter, this.propNodeMap);
-          }
-        } else {
-          this.element.parse(node, this.presenter, this.propNodeMap);
-          this.parseTemplate(node, nodes);//recursive
-        }
-      }
-      if(node.terms) {
+    if(node.nodeType===3/*Text*/) {
+      this.textNode.parse(node, this.presenter, this.propNodeMap);
+    } else if(node.nodeType==1/*Element*/) {
+      if(node.localName==='style') {
+        this.style.parse(node, this.presenter);
         nodes.push(node);
+      } else if(node.localName==='template') {
+        if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {
+          this.tmplSwitch.parse(node, this.presenter, this.propNodeMap);
+        } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
+          this.tmplArray.parse(node, this.presenter, this.propNodeMap);
+        }
+      } else {
+        this.element.parse(node, this.presenter, this.propNodeMap);
+        this.parseTemplate(node, nodes);//recursive
       }
+    }
+    if(node.terms) {
+      nodes.push(node);
     }
   }
 
@@ -135,24 +133,21 @@ class extends base {
 
   solveNode(nodes) {
     let clones = [];
-
     nodes.forEach((node, i) => {
-      if(node.localName==='style') {
-        this.style.solve(node, this.presenter);
-      } else {
-        if(node.nodeType===3/*Text*/) {
-          this.textNode.solve(this, node, this.propNodeMap);
-        } else if(node.nodeType==1/*Element*/) {
-          if(node.localName==='template') {
-            if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {
-              this.tmplSwitch.solve(this, node, this.propNodeMap);
-            } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
-              this.tmplArray.solve(this, node, this.propNodeMap);
-            }
-            if(node.clones) {
-              clones = clones.concat(node.clones);
-            }
-          } else {
+      if(node.nodeType===3/*Text*/) {
+        this.textNode.solve(this, node, this.propNodeMap);
+      } else if(node.nodeType==1/*Element*/) {
+        if(node.localName==='template') {
+          if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {
+            this.tmplSwitch.solve(this, node, this.propNodeMap);
+          } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
+            this.tmplArray.solve(this, node, this.propNodeMap);
+          }
+          if(node.clones) {
+            clones = clones.concat(node.clones);
+          }
+        } else {
+          if(node.localName!='style') {
             this.element.solve(this, node, this.propNodeMap);
           }
         }

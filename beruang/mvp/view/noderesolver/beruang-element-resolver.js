@@ -1,6 +1,6 @@
 import {BeruangNodeResolver} from './beruang-node-resolver.js';
 
-class BeruangElement extends BeruangNodeResolver(Object) {
+class BeruangElementResolver extends BeruangNodeResolver(Object) {
 
   constructor() {
     super();
@@ -79,4 +79,4 @@ class BeruangElement extends BeruangNodeResolver(Object) {
   }
 }
 
-export {BeruangElement};
+export {BeruangElementResolver};

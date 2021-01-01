@@ -1,4 +1,4 @@
-import {BeruangViewFactory} from '../beruang/mvp/beruang-view-factory.js';
+import {BeruangViewFactory} from '../beruang/mvp/view/beruang-view-factory.js';
 
 class SampleViewFactory extends BeruangViewFactory(Object) {
 

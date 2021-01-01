@@ -1,4 +1,4 @@
-import {BeruangPresenter} from '../beruang/mvp/beruang-presenter.js';
+import {BeruangPresenter} from '../beruang/mvp/presenter/beruang-presenter.js';
 import {SampleViewFactory} from './sample-view-factory.js';
 
 class SamplePresenter extends BeruangPresenter(HTMLElement) {

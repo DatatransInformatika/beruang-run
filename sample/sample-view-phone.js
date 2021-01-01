@@ -1,4 +1,4 @@
-import {BeruangView} from '../beruang/mvp/beruang-view.js';
+import {BeruangView} from '../beruang/mvp/view/beruang-view.js';
 
 class SampleView extends BeruangView(Object) {
   constructor() {

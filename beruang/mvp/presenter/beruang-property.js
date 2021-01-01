@@ -1,4 +1,4 @@
-import {BeruangCoercer} from './beruang-coercer.js';
+import {BeruangCoercer} from '../../util/beruang-coercer.js';
 import {BeruangArray} from './beruang-array.js';
 
 export const BeruangProperty = (base) =>

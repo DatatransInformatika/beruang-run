@@ -1,4 +1,4 @@
-import {BeruangCoercer} from '../beruang-coercer.js';
+import {BeruangCoercer} from '../../../util/beruang-coercer.js';
 
 export const BeruangNodeResolver = (base) =>
 class extends base {
