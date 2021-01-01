@@ -5,16 +5,14 @@
   <title>Beruang</title>
   <script type="application/javascript" src="./beruang/util/beruang-init.js" async="false"></script>
   <script type="module" src="./sample/sample-presenter.js" async="false"></script>
+  <script type="module" src="./beruang/mvp/view/element/layoutmanager/beruang-layout-manager.js" async="false"></script>
   <script type="application/javascript" async="false">
   function f() {
-    let el = document.querySelector('sample-presenter');
+    /*let el = document.querySelector('sample-presenter');
     setTimeout(()=>{
       el.label = 'Cicit';
       el.show = true;
-      /*setTimeout(()=>{
-        el.show = false;
-      },500);*/
-    }, 100);
+    }, 100);*/
   }
   </script>
   <style>
@@ -24,6 +22,7 @@
 </style>
 </head>
 <body onload="f()">
-  <sample-presenter>abc</sample-presenter>
+  <!--sample-presenter>abc</sample-presenter-->
+  <beruang-layout-manager></beruang-layout-manager>
 </body>
 </html>

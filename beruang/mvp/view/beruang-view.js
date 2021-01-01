@@ -258,4 +258,11 @@ class extends base {
       }
     });
   }
+
+//abstract:BEGIN
+  static getTemplate() {
+    throw new Error('BeruangView: you have to call getTemplate method ' +
+      'implemented by child only!');
+  }
+//abstract:END
 }

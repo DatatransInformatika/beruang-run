@@ -25,6 +25,7 @@ function formfactor() {
   return "desktop";
 };
 window.formfactor = formfactor();
+window.rootpath = window.location.pathname;
 if(window.formfactor=="phone" || window.formfactor=="tablet") {
   let meta = document.createElement("meta");
   meta.name = "viewport";

@@ -13,12 +13,12 @@ class SampleViewFactory extends BeruangViewFactory(Object) {
     switch(formfactor) {
       case 'phone':
       case 'table':
-        src = '/beruang/sample/sample-view-phone.js';
-        //src = '/beruang/sample/sample-view-desktop.js';
+        src = window.rootpath + 'sample/sample-view-phone.js';
+        //src = window.rootpath + 'sample-view-desktop.js';
         break;
       case 'desktop':
       default:
-        src = '/beruang/sample/sample-view-desktop.js';
+        src = window.rootpath +  'sample/sample-view-desktop.js';
         break;
     }
     return src;
