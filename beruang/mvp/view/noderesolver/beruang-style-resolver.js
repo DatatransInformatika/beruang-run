@@ -36,34 +36,77 @@ class BeruangStyleResolver {
     }
   }
 
-  update(selector, rule, presenter) {
-
+  update(node, selector, stmt, dedup, presenter) {
+    selector = this.trimSelector(selector);
+    let parted = this.partScope(selector);
+    if(parted) {//do not update ::part(...)
+      return;
+    }
+    let hit = false;
+    for(let i=node.rules.length-1; i>=0; i--) {
+      let rule = node.rules[i];
+      let terms = this.ruleSplit(rule);
+      let _selector = terms[1].trim();
+      if(_selector===selector) {
+        if(hit) {//dedup
+          node.rules.splice(i, 1);
+        } else {
+          hit = true;
+          node.rules[i] = selector + ' {' + stmt + '}';
+          if(!dedup) {
+            break;
+          }
+        }
+      }
+    }
+    if(!hit) {
+      node.rules.push(selector + ' {' + stmt + '}');
+    }
+    let rslt = this.parseDo(node.rules, presenter);
+    node.textContent = rslt.stmt;
   }
 
-  remove(selector) {
-
+  remove(node, selector, presenter) {
+    let hit = false;
+    selector = this.trimSelector(selector);
+    for(let i=node.rules.length-1; i>=0; i--) {
+      let rule = node.rules[i];
+      let terms = this.ruleSplit(rule);
+      let _selector = terms[1].trim();
+      let parted = this.partScope(_selector);
+      if(!parted && _selector===selector) {//can delete ::part(...) selector
+        node.rules.splice(i, 1);
+        hit = true;
+      }
+    }
+    if(hit) {
+      let rslt = this.parseDo(node.rules, presenter);
+      node.textContent = rslt.stmt;
+    }
   }
 
   parseDo(rules, presenter) {
     let rslt = {'inject':false, 'stmt':''};
     rules.forEach((rule, i) => {
-      let matches = rule.match(/(\s*\S+[:]{2}part\s*[(][^(]+[)])\s*{([^{]*)}/);
-      if(matches && matches.length>2) {
-        rslt.inject = true;
-        let selector = matches[1].trim();
-        let ss = selector.match(/(\S+)[:]{2}part.*/);
-        let scope = ss[1];
-        if(scope===':host') {
-          selector = selector.replace(':host', presenter.localName);
-        }
+      let terms = this.ruleSplit(rule);
+      let selector = this.trimSelector(terms[1]);
+      let stmt = terms[2];
+      rule = selector + ' {' + stmt + '}';
+      rules[i] = rule;//update with trimmed version
+      let parted = this.partScope(selector);
+      if(parted) {
         document.beruangStyles = document.beruangStyles || [];
         if(document.beruangStyles.indexOf(selector)===-1) {
+          let scope = parted[1];
+          if(scope===':host') {
+            selector = selector.replace(':host', presenter.localName);
+          }
           let sheet = this.ensureDocSheet();
-          this.addDocRule(sheet, selector, matches[2], 0);
+          this.addDocRule(sheet, selector, stmt, 0);
           document.beruangStyles.push(selector);
         }
       } else {
-          rslt.stmt += rule;
+        rslt.stmt += rule;
       }
     });
     return rslt;
@@ -87,6 +130,18 @@ class BeruangStyleResolver {
   	else if("addRule" in sheet) {
   		sheet.addRule(selector, rules, index);
   	}
+  }
+
+  trimSelector(s) {
+    return s.trim().replace(/[ ]+/g, ' ');
+  }
+
+  ruleSplit(s) {
+    return s.match(/([^{]+){([^{]*)}/);
+  }
+
+  partScope(s) {
+    return s.match(/(\S+)[:]{2}part.*/);
   }
 }
 

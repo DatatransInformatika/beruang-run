@@ -75,6 +75,7 @@ class extends base {
     } else if(node.nodeType==1/*Element*/) {
       if(node.localName==='style') {
         this.style.parse(node, this.presenter);
+        this.styleNode = node;
         nodes.push(node);
       } else if(node.localName==='template') {
         if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {
@@ -172,12 +173,16 @@ class extends base {
     }
   }
 
-  styleUpdate(selector, rule) {
-    this.style.update(selector, rule, this.presenter);
+  updateStyle(selector, rule, dedup) {
+    if(this.styleNode) {
+      this.style.update(this.styleNode, selector, rule, dedup, this.presenter);
+    }
   }
 
-  styleRemove(selector) {
-    this.style.remove(selector);
+  removeStyle(selector) {
+    if(this.styleNode) {
+      this.style.remove(this.styleNode, selector, this.presenter);
+    }
   }
 
   solveClones(clones) {
