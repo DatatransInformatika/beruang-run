@@ -5,7 +5,7 @@ class SampleView extends BeruangView(Object) {
     super();
   }
 
-  static getTemplate() {
+  static get template() {
     return `<style>:host {font-size:20px;font-weight:bold;}</style>
       <b>Phone, I'm in shadow dom from beruang-viewfactory!</b>
       <slot></slot>`;

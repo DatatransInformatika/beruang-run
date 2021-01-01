@@ -22,7 +22,7 @@ class BeruangElement extends BeruangProperty(BeruangView(HTMLElement)) {
       templateCallback(t);
     } else {
       let t = document.createElement('template');
-      t.innerHTML = this.constructor.getTemplate();
+      t.innerHTML = this.constructor.template;
       this.constructor._viewTmpl[clsName] = t;
       templateCallback(t);
     }
@@ -37,8 +37,8 @@ class BeruangElement extends BeruangProperty(BeruangView(HTMLElement)) {
   }
 
 //abstract:BEGIN
-  static getTemplate() {
-    throw new Error('BeruangElement: you have to call getTemplate method ' +
+  static get template() {
+    throw new Error('BeruangElement: you have to call get template ' +
       'implemented by child only!');
   }
 //abstract:END

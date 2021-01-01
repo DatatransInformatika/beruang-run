@@ -5,7 +5,7 @@ class BeruangLayoutManager extends BeruangElement {
     super();
   }
 
-  static getTemplate() {
+  static get template() {
     return `beruang-layout-manager`;
   }
 }

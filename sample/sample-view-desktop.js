@@ -7,7 +7,7 @@ class SampleView extends BeruangView(Object) {
     super();
   }
 
-  static getTemplate() {
+  static get template() {
     return `
     <style include="beruang-layout  beruang-other">
     :host {

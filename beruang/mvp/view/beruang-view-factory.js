@@ -27,7 +27,7 @@ class extends base {
         vc = module[clsName];
         this._viewClass[clsName] = vc;
         let t = document.createElement('template');
-        t.innerHTML = vc.getTemplate();
+        t.innerHTML = vc.template;
         this._viewTmpl[clsName] = t;
         templateCallback(vc, t);
         delete this._viewWait[clsName];
