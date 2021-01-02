@@ -1,10 +1,8 @@
 import {BeruangCoercer} from '../../../util/beruang-coercer.js';
 
-export const BeruangNodeResolver = (base) =>
-class extends base {
-  constructor(){
-    super();
-  }
+class BeruangNodeParser {
+
+  constructor(){}
 
   get coercer() {
     if(!this._coercer){
@@ -133,10 +131,13 @@ class extends base {
 
     if(presenter.prop.hasOwnProperty(p0)) {
       let val = this.objPathValue(presenter[p0], pathArr);
+      if(neg) {
+        val = !this.coercer.toBoolean(val);
+      }
       let term = {
         'stmt':stmt,
         'fname':null,
-        'neg':neg,
+        'neg':false,
         'args':[p0],
         'paths':[path],
         'negs':[neg],
@@ -186,6 +187,9 @@ class extends base {
 
         if(arrTmpl) {
           let obj = this.arrayValue(path, arrTmpl, presenter.view);
+          if(neg) {
+            obj.val = !this.coercer.toBoolean(obj.val);
+          }
           if(obj) {
             term['args'].push(path);
             term['paths'].push(path),
@@ -201,6 +205,9 @@ class extends base {
         term['paths'].push(path);
         if(presenter.prop.hasOwnProperty(p0)) {
             let val = this.objPathValue(presenter[p0], pathArr);
+            if(neg) {
+              val = !this.coercer.toBoolean(val);
+            }
             term['negs'].push(neg);
             term['vals'].push(val);
             this.propNodeMapInsert(propNodeMap, p0, node);
@@ -244,16 +251,6 @@ class extends base {
       (match, p1, p2, offset) => p2 ? p2.toUpperCase() : p1.toLowerCase()
   	);
   }
-
-//abstract:BEGIN
-  parse(node, presenter, propNodeMap) {
-    throw new Error('BeruangNodeResolver: you have to call parse method ' +
-      'implemented by child only!');
-  }
-
-  solve(view, node, propNodeMap) {
-    throw new Error('BeruangNodeResolver: you have to call solve method ' +
-      'implemented by child only!');
-  }
-//abstract:END
 }
+
+export {BeruangNodeParser};

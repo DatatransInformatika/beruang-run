@@ -1,8 +1,5 @@
-import {BeruangStyleResolver} from './noderesolver/beruang-style-resolver.js';
-import {BeruangTextNode} from './noderesolver/beruang-textnode.js';
-import {BeruangTemplateSwitch} from './noderesolver/beruang-template-switch.js';
-import {BeruangTemplateArray} from './noderesolver/beruang-template-array.js';
-import {BeruangElementResolver} from './noderesolver/beruang-element-resolver.js';
+import {BeruangNodeParser} from './nodeparser/beruang-node-parser.js';
+import {BeruangTemplateParser} from './nodeparser/beruang-template-parser.js';
 
 export const BeruangView = (base) =>
 class extends base {
@@ -28,39 +25,18 @@ class extends base {
     return this._propNodeMap;
   }
 
-  get style() {
-    if(!this._style) {
-      this._style = new BeruangStyleResolver();
+  get nodeParser() {
+    if(!this._nodeParser) {
+      this._nodeParser = new BeruangNodeParser();
     }
-    return this._style;
+    return this._nodeParser;
   }
 
-  get textNode() {
-    if(!this._textNode) {
-      this._textNode = new BeruangTextNode();
+  get templateParser() {
+    if(!this._templateParser) {
+      this._templateParser = new BeruangTemplateParser();
     }
-    return this._textNode;
-  }
-
-  get tmplSwitch() {
-    if(!this._tmplSwitch) {
-      this._tmplSwitch = new BeruangTemplateSwitch();
-    }
-    return this._tmplSwitch;
-  }
-
-  get tmplArray() {
-    if(!this._tmplArray) {
-      this._tmplArray = new BeruangTemplateArray();
-    }
-    return this._tmplArray;
-  }
-
-  get element() {
-    if(!this._element) {
-      this._element = new BeruangElementResolver();
-    }
-    return this._element;
+    return this._templateParser;
   }
 
   parseTemplate(root, nodes) {
@@ -71,20 +47,35 @@ class extends base {
 
   parseNode(node, nodes) {
     if(node.nodeType===3/*Text*/) {
-      this.textNode.parse(node, this.presenter, this.propNodeMap);
+      if(this.textParser) {
+        this.textParser.parseText(node, this.presenter, this.propNodeMap,
+          this.nodeParser);
+      }
     } else if(node.nodeType==1/*Element*/) {
       if(node.localName==='style') {
-        this.style.parse(node, this.presenter);
-        this.styleNode = node;
-        nodes.push(node);
+        if(this.styleParser) {
+          this.styleParser.parseStyle(node, this.presenter);
+          this.styleNode = node;
+          nodes.push(node);
+        }
       } else if(node.localName==='template') {
-        if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {
-          this.tmplSwitch.parse(node, this.presenter, this.propNodeMap);
-        } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
-          this.tmplArray.parse(node, this.presenter, this.propNodeMap);
+        if( node.hasAttribute(this.switchAttribute) ) {
+          if(this.switchParser) {
+            this.switchParser.parseSwitch(node, this.presenter,
+              this.propNodeMap, this.nodeParser, this.templateParser,
+              this.switchAttribute);
+          }
+        } else if( node.hasAttribute(this.arrayAttribute) ) {
+          if(this.arrayParser) {
+            this.arrayParser.parseArray(node, this.presenter, this.propNodeMap,
+              this.nodeParser, this.templateParser, this.arrayAttribute);
+          }
         }
       } else {
-        this.element.parse(node, this.presenter, this.propNodeMap);
+        if(this.elementParser) {
+          this.elementParser.parseElement(node, this.presenter,
+            this.propNodeMap, this.nodeParser);
+        }
         this.parseTemplate(node, nodes);//recursive
       }
     }
@@ -99,34 +90,35 @@ class extends base {
       let obj = this.pathNodes( path, (node)=>true );
       if(obj.finalNodes.length>0) {
         obj.finalNodes.forEach((node, i) => {
-          let val = this.presenter.get(path);
+          let substitute = false;
           if(node.nodeType===3/*Text*/) {
-            if(this.textNode.pathSubstitute(node, obj.finalPath, val)){
-              rslt.push(node);
-            }
+            substitute = !!this.textParser;
           } else if(node.nodeType==1/*Element*/) {
             if(node.localName==='template') {
-              if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {//switch
-                if(this.tmplSwitch.pathSubstitute(node, obj.finalPath, val)){
-                  rslt.push(node);
-                }
-              } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
-                if(this.tmplArray.pathSubstitute(node, obj.finalPath, val)){
-                  rslt.push(node);
-                }
+              if( node.hasAttribute(this.switchAttribute) ) {
+                substitute = !!this.switchParser;
+              } else if( node.hasAttribute(this.arrayAttribute) ) {
+                substitute = !!this.arrayParser;
               }
             } else {
-              if(this.element.pathSubstitute(node, obj.finalPath, val)){
-                rslt.push(node);
+              if(node.localName!='style') {
+                substitute = !!this.elementParser;
               }
             }
           }
+          if(substitute) {
+            let val = this.presenter.get(path);
+            if(this.nodeParser.pathSubstitute(node, obj.finalPath, val)){
+                rslt.push(node);
+            }
+          }
         });
+
         if(obj.pathNodes>0) {
           rslt = rslt.concat(obj.pathNodes);
         }
-      }
-    });
+      }//if(obj.finalNodes.length>0) {
+    });//props.forEach((path, i) => {
     if(rslt.length>0) {
         this.solveNode(rslt);
     }
@@ -136,20 +128,32 @@ class extends base {
     let clones = [];
     nodes.forEach((node, i) => {
       if(node.nodeType===3/*Text*/) {
-        this.textNode.solve(this, node, this.propNodeMap);
+        if(this.textParser) {
+          this.textParser.solveText(this, node, this.propNodeMap,
+            this.nodeParser);
+        }
       } else if(node.nodeType==1/*Element*/) {
         if(node.localName==='template') {
-          if( node.hasAttribute(this.tmplSwitch.stmtAttribute()) ) {
-            this.tmplSwitch.solve(this, node, this.propNodeMap);
-          } else if( node.hasAttribute(this.tmplArray.stmtAttribute()) ) {
-            this.tmplArray.solve(this, node, this.propNodeMap);
+          if( node.hasAttribute(this.switchAttribute) ) {
+            if(this.switchParser) {
+              this.switchParser.solveSwitch(this, node, this.propNodeMap,
+                this.nodeParser, this.templateParser);
+            }
+          } else if( node.hasAttribute(this.arrayAttribute) ) {
+            if(this.arrayParser) {
+              this.arrayParser.solveArray(this, node, this.propNodeMap,
+                this.nodeParser, this.templateParser);
+            }
           }
           if(node.clones) {
             clones = clones.concat(node.clones);
           }
         } else {
           if(node.localName!='style') {
-            this.element.solve(this, node, this.propNodeMap);
+            if(this.elementParser) {
+              this.elementParser.solveElement(this, node, this.propNodeMap,
+                this.nodeParser);
+            }
           }
         }
       }
@@ -158,30 +162,33 @@ class extends base {
   }
 
   arraySplice(path, startIdx, count, removeCount) {
-    let obj = this.pathNodes( path, (node)=>node.hasAttribute &&
-      node.hasAttribute(this.tmplArray.stmtAttribute()) );
-    if(obj.finalNodes.length>0) {
-      let rslt = this.tmplArray.splice(obj.finalNodes, startIdx, count,
-        removeCount, this.propNodeMap);
-      if(rslt.substitutes.length>0) {
-        obj.pathNodes = obj.pathNodes.concat(rslt.substitutes);
-      }
-      this.solveClones(rslt.clones);
-      if(obj.pathNodes.length>0) {
-        this.solveNode(obj.pathNodes);
+    if(this.arrayParser) {
+      let obj = this.pathNodes( path, (node)=>node.hasAttribute &&
+        node.hasAttribute(this.arrayAttribute) );
+      if(obj.finalNodes.length>0) {
+        let rslt = this.arrayParser.splice(obj.finalNodes, startIdx, count,
+          removeCount, this.propNodeMap, this.nodeParser, this.templateParser,
+          this.arrayAttribute);
+        if(rslt.substitutes.length>0) {
+          obj.pathNodes = obj.pathNodes.concat(rslt.substitutes);
+        }
+        this.solveClones(rslt.clones);
+        if(obj.pathNodes.length>0) {
+          this.solveNode(obj.pathNodes);
+        }
       }
     }
   }
 
   updateStyle(selector, rule, dedup) {
-    if(this.styleNode) {
-      this.style.update(this.styleNode, selector, rule, dedup, this.presenter);
+    if(this.styleNode && this.styleParser) {
+      this.styleParser.updateStyle(this.styleNode, selector, rule, dedup, this.presenter);
     }
   }
 
   removeStyle(selector) {
-    if(this.styleNode) {
-      this.style.remove(this.styleNode, selector, this.presenter);
+    if(this.styleNode && this.styleParser) {
+      this.style.removeStyle(this.styleNode, selector, this.presenter);
     }
   }
 
@@ -221,24 +228,26 @@ class extends base {
       }
     }
 
-    let arrAttr = this.tmplArray.stmtAttribute();
     nodes.forEach((node, i) => {
-      if(node.hasAttribute && node.hasAttribute(arrAttr)) {
-        let attr = node.getAttribute ? node.getAttribute(arrAttr) : null;
-        if( attr && attr==result.finalPath ) {
-          if(startIdx >= paths.length) {
-            if( finalMatchFunc(node) )
-              result.finalNodes.push(node);
-            else
-              result.pathNodes.push(node);
-            return;
+      if(node.hasAttribute && node.hasAttribute(this.arrayAttribute)) {
+        if(this.arrayParser) {
+          let attr = node.getAttribute ? node.getAttribute(this.arrayAttribute)
+            : null;
+          if( attr && attr==result.finalPath ) {
+            if(startIdx >= paths.length) {
+              if( finalMatchFunc(node) )
+                result.finalNodes.push(node);
+              else
+                result.pathNodes.push(node);
+              return;
+            }
+            let nexts = [];
+            this.arrayParser.termedClones(node,
+              (_node, arrTmpl)=>arrTmpl.idx==arrIdx,
+              node.clones, nexts, null, this.nodeParser);
+            result.finalPath = node.tmpl.fldItem;
+            this.pathNodesDo(paths, startIdx+1, nexts, finalMatchFunc, result);
           }
-          let nexts = [];
-          this.tmplArray.termedClones(node,
-            (_node, arrTmpl)=>arrTmpl.idx==arrIdx,
-            node.clones, nexts, null);
-          result.finalPath = node.tmpl.fldItem;
-          this.pathNodesDo(paths, startIdx+1, nexts, finalMatchFunc, result);
         }
       } else {
         if(startIdx==1 && startIdx>=paths.length) {
@@ -248,7 +257,7 @@ class extends base {
             result.pathNodes.push(node);
           return;
         }
-        if(node.terms && this.textNode.pathExists(node.terms, result.finalPath)){
+        if(node.terms && this.nodeParser.pathExists(node.terms, result.finalPath)){
           if(startIdx >= paths.length && finalMatchFunc(node) ) {
             result.finalNodes.push(node);
           } else {
@@ -257,6 +266,14 @@ class extends base {
         }
       }
     });
+  }
+
+  get switchAttribute() {
+    return 'data-switch';
+  }
+
+  get arrayAttribute() {
+    return 'data-array';
   }
 
 //abstract:BEGIN

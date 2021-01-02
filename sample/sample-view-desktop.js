@@ -1,7 +1,22 @@
 import {BeruangView} from '../beruang/mvp/view/beruang-view.js';
 import '../beruang/mvp/view/style/beruang-layout.js';
+import {BeruangStyleParser} from '../beruang/mvp/view/nodeparser/beruang-style-parser.js';
+import {BeruangElementParser} from '../beruang/mvp/view/nodeparser/beruang-element-parser.js';
+import {BeruangTextParser} from '../beruang/mvp/view/nodeparser/beruang-text-parser.js';
+import {BeruangSwitchParser} from '../beruang/mvp/view/nodeparser/beruang-switch-parser.js';
+import {BeruangArrayParser} from '../beruang/mvp/view/nodeparser/beruang-array-parser.js';
 
-class SampleView extends BeruangView(Object) {
+class SampleView extends BeruangView(
+  BeruangStyleParser(
+    BeruangElementParser(
+      BeruangTextParser(
+        BeruangSwitchParser(
+          BeruangArrayParser(Object)
+        )
+      )
+    )
+  )
+) {
 
   constructor() {
     super();
@@ -39,7 +54,10 @@ class SampleView extends BeruangView(Object) {
 Desktop [[large (123, label, ADUH)]] at [[address]]
 once more [[large(123, label, ADUH)]]</b>
     <slot></slot>
+    <br>
+    <br>
     <template data-switch="!show">cond [[address]] <div>conditional [[label]]</div></template>
+    <br>
     <div part="alert">simpleArray size: [[arrayLen(simpleArray)]]
       <div>simpleArray size 2: [[arrayLen(simpleArray)]]</div>
     </div>
@@ -48,7 +66,6 @@ once more [[large(123, label, ADUH)]]</b>
     <div>[[label]] [[i]] [[n]] [[plusTen(i)]]</div>
     </template>
     <template data-array="personArray" data-item="p" data-index="j">
-      <input check value="[[p.name:input]]"></input>
       <div>[[j]] [[p.name]]</div>
       <template data-switch="show">cond [[address]] <div>conditional [[label]]</div></template>
     </template>
@@ -58,7 +75,6 @@ once more [[large(123, label, ADUH)]]</b>
         <div>[[j]] [[p.label]]</div>
         <div>p.sub array size: [[arrayLen(p.sub)]]</div>
         <template data-array="p.sub" data-item="q" data-index="k">
-          <input check value="[[q.sub1:input]]"></input>
           <div>[[k]] [[q.sub1]] [[q.sub2]]</div>
         </template>
       </template>

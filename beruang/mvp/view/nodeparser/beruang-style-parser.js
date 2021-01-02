@@ -1,18 +1,25 @@
-class BeruangStyleResolver {
+export const BeruangStyleParser = (base) =>
+class extends base {
 
-  constructor() {}
+  constructor() {
+    super();
+  }
 
-  parse(node, presenter) {
+  get styleParser() {
+    return this;
+  }
+
+  parseStyle(node, presenter) {
     let obj = {'rules':[], 'include':false};
-    this.fetchRules(node, obj);
+    this.fetchStyleRules(node, obj);
     node.rules = obj.rules;
-    let rslt = this.parseDo(node.rules, presenter);
+    let rslt = this.parseStyleDo(node.rules, presenter);
     if(obj.include || rslt.inject) {
       node.textContent = rslt.stmt;
     }
   }
 
-  fetchRules(styleNode, obj) {
+  fetchStyleRules(styleNode, obj) {
     if(styleNode.hasAttribute('include')){
       let attr = styleNode.getAttribute('include').trim();
       attr = attr.replace(/[ ]+/g, ' ');
@@ -25,7 +32,7 @@ class BeruangStyleResolver {
         let style = el.shadowRoot.querySelector('style');
         if(style) {
           obj.include = true;
-          this.fetchRules(style, obj);
+          this.fetchStyleRules(style, obj);
         }
         el = null;
       });
@@ -36,7 +43,7 @@ class BeruangStyleResolver {
     }
   }
 
-  update(node, selector, stmt, dedup, presenter) {
+  updateStyle(node, selector, stmt, dedup, presenter) {
     selector = this.trimSelector(selector);
     let parted = this.partScope(selector);
     if(parted) {//do not update ::part(...)
@@ -62,11 +69,11 @@ class BeruangStyleResolver {
     if(!hit) {
       node.rules.push(selector + ' {' + stmt + '}');
     }
-    let rslt = this.parseDo(node.rules, presenter);
+    let rslt = this.parseStyleDo(node.rules, presenter);
     node.textContent = rslt.stmt;
   }
 
-  remove(node, selector, presenter) {
+  removeStyle(node, selector, presenter) {
     let hit = false;
     selector = this.trimSelector(selector);
     for(let i=node.rules.length-1; i>=0; i--) {
@@ -80,12 +87,12 @@ class BeruangStyleResolver {
       }
     }
     if(hit) {
-      let rslt = this.parseDo(node.rules, presenter);
+      let rslt = this.parseStyleDo(node.rules, presenter);
       node.textContent = rslt.stmt;
     }
   }
 
-  parseDo(rules, presenter) {
+  parseStyleDo(rules, presenter) {
     let rslt = {'inject':false, 'stmt':''};
     rules.forEach((rule, i) => {
       let terms = this.ruleSplit(rule);
@@ -142,6 +149,5 @@ class BeruangStyleResolver {
   partScope(s) {
     return s.match(/(\S+)[:]{2}part.*/);
   }
-}
 
-export {BeruangStyleResolver};
+}

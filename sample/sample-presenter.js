@@ -1,7 +1,8 @@
 import {BeruangPresenter} from '../beruang/mvp/presenter/beruang-presenter.js';
+import {BeruangArray} from '../beruang/mvp/presenter/beruang-array.js';
 import {SampleViewFactory} from './sample-view-factory.js';
 
-class SamplePresenter extends BeruangPresenter(HTMLElement) {
+class SamplePresenter extends BeruangPresenter(BeruangArray(HTMLElement)){
 
   constructor() {
     super(SampleViewFactory);
@@ -27,7 +28,7 @@ class SamplePresenter extends BeruangPresenter(HTMLElement) {
 
       show: {
         type:Boolean,
-        value:false
+        value:true
       },
 
       simpleArray: {

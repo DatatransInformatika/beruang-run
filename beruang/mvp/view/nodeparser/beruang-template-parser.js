@@ -1,21 +1,15 @@
-import {BeruangNodeResolver} from './beruang-node-resolver.js';
+class BeruangTemplateParser {
 
-export const BeruangTemplateResolver = (base) =>
-class extends BeruangNodeResolver(base) {
-  constructor() {
-    super();
-  }
+  constructor() {}
 
-  /*override parent abstract method*/
-  parse(node, presenter, propNodeMap) {
-    let attr = this.stmtAttribute();
-    let stmt = node.getAttribute(attr) || '';
+  parseTemplate(node, presenter, propNodeMap, nodeParser, tmplAttr) {
+    let stmt = node.getAttribute(tmplAttr) || '';
     stmt = stmt.toString();
     if(stmt.length<1){
       return;
     }
-    let obj = this.tmplSimple(stmt, node, presenter, propNodeMap)
-      || this.tmplFunc(stmt, node, presenter, propNodeMap);
+    let obj = nodeParser.tmplSimple(stmt, node, presenter, propNodeMap)
+      || nodeParser.tmplFunc(stmt, node, presenter, propNodeMap);
     if(obj) {
       if(!node.terms) {
         node.terms = [];
@@ -40,7 +34,7 @@ class extends BeruangNodeResolver(base) {
     }
     let el = node.firstChild;
     while(el) {
-      this.removePropNode(el, propNodeMap);
+      this.removePropNode(el, propNodeMap);//recursive
       el = el.nextSibling;
     }
   }
@@ -55,15 +49,10 @@ class extends BeruangNodeResolver(base) {
     this.removePropNode(clone, propNodeMap);
     clone.parentNode.removeChild(clone);
     if(clone.clones) {
-      this.removeClones(clone.clones, propNodeMap);
+      this.removeClones(clone.clones, propNodeMap);//recursive
       clone.clones = null;
     };
   }
-
-//abstract:BEGIN
-  stmtAttribute() {
-    throw new Error('BeruangTemplate: you have to call stmtAttribute method ' +
-      'implemented by child only!');
-  }
-//abstract:END
 }
+
+export {BeruangTemplateParser};

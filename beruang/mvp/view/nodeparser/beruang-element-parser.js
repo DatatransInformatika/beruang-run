@@ -1,13 +1,15 @@
-import {BeruangNodeResolver} from './beruang-node-resolver.js';
-
-class BeruangElementResolver extends BeruangNodeResolver(Object) {
+export const BeruangElementParser = (base) =>
+class extends base {
 
   constructor() {
     super();
   }
 
-  /*override parent abstract method*/
-  parse(node, presenter, propNodeMap) {
+  get elementParser() {
+    return this;
+  }
+
+  parseElement(node, presenter, propNodeMap, nodeParser) {
     let reProp = /[[]{2}\s{0,}\S{1,}[^[]{0,}\s{0,}]{2}/;
     for (let i=0, attrs=node.attributes, n=attrs.length; i<n; i++){
       let att = attrs[i].nodeName;
@@ -16,18 +18,17 @@ class BeruangElementResolver extends BeruangNodeResolver(Object) {
         this.parseEvent(node, att.replace(/^on-/, ''), v, presenter.view);
       } else {
         if(reProp.test(v)){
-          this.parseAttribute(att, v, node, presenter, propNodeMap);
+          this.parseAttribute(att, v, node, presenter, propNodeMap, nodeParser);
         }
       }
     };
   }
 
-  /*override parent abstract method*/
-  solve(view, node, propNodeMap) {
+  solveElement(view, node, propNodeMap, nodeParser) {
     node.terms.forEach((term, i) => {
-      let val = this.nodeValue(term, view);
+      let val = nodeParser.nodeValue(term, view);
       if(term.neg){
-        val = !this.coercer.toBoolean(val);
+        val = !nodeParser.coercer.toBoolean(val);
       }
       if(term.property) {
         node[term.stmt] = val;
@@ -37,24 +38,24 @@ class BeruangElementResolver extends BeruangNodeResolver(Object) {
     });
   }
 
-  parseAttribute(attr, attrValue, node, presenter, propNodeMap) {
+  parseAttribute(attr, attrValue, node, presenter, propNodeMap, nodeParser) {
     attrValue = attrValue.replace(/^[[]{2}|]{2}$/g, '').trim();//remove brackets
     let vs = attrValue.split(':');
     let stmt = vs[0];
-    let obj = this.tmplSimple(stmt, node, presenter, propNodeMap);
+    let obj = nodeParser.tmplSimple(stmt, node, presenter, propNodeMap);
     if(obj) {//simple
       if(vs.length>1) {
         node.addEventListener(vs[1], ()=>{
-          let arrPath = this.arrayPath(node);
+          let arrPath = nodeParser.arrayPath(node);
           let path = arrPath ? arrPath : obj.term.paths[0];
           presenter.set(path, node.value);
         });
       }
     } else {
-      obj = this.tmplFunc(stmt, node, presenter, propNodeMap);
+      obj = nodeParser.tmplFunc(stmt, node, presenter, propNodeMap);
     }
     if(obj) {
-      let camel = this.camelize(attr);
+      let camel = nodeParser.camelize(attr);
       obj.term.property = node.hasOwnProperty(camel);
       obj.term.stmt = obj.term.property ? camel : attr;
       if(!node.terms) {
@@ -78,5 +79,3 @@ class BeruangElementResolver extends BeruangNodeResolver(Object) {
     }
   }
 }
-
-export {BeruangElementResolver};

@@ -1,24 +1,26 @@
-import {BeruangNodeResolver} from './beruang-node-resolver.js';
-
-class BeruangTextNode extends BeruangNodeResolver(Object) {
+export const BeruangTextParser = (base) =>
+class extends base {
 
   constructor() {
     super();
   }
 
-  /*override parent abstract method*/
-  parse(node, presenter, propNodeMap) {
+  get textParser() {
+    return this;
+  }
+
+  parseText(node, presenter, propNodeMap, nodeParser) {
     let gs = node.textContent.match(/[[]{2}\s{0,}\S{1,}[^[]{0,}\s{0,}]{2}/g);
     if(!gs){
       return;
     }
     gs.forEach((g, i) => { /*[[...]]*/
       let stmt = g.replace(/^[[]{2}|]{2}$/g, '').trim();/*remove brackets*/
-      if(node.terms && this.termExists(node.terms, stmt)){
+      if(node.terms && nodeParser.termExists(node.terms, stmt)){
         return;
       }
-      let obj = this.tmplSimple(stmt, node, presenter, propNodeMap)
-        || this.tmplFunc(stmt, node, presenter, propNodeMap);
+      let obj = nodeParser.tmplSimple(stmt, node, presenter, propNodeMap)
+        || nodeParser.tmplFunc(stmt, node, presenter, propNodeMap);
       if(obj) {
         if(!node.terms) {
           node.terms = [];
@@ -33,13 +35,12 @@ class BeruangTextNode extends BeruangNodeResolver(Object) {
     }
   }
 
-  /*override parent abstract method*/
-  solve(view, node, propNodeMap) {
+  solveText(view, node, propNodeMap, nodeParser) {
     let s = node.rawContent;
     node.terms.forEach((term, i) => {
-      let val = this.nodeValue(term, view);
+      let val = nodeParser.nodeValue(term, view);
       if(term.neg){
-        val = !this.coercer.toBoolean(val);
+        val = !nodeParser.coercer.toBoolean(val);
       }
       if(val!=null) {
         s = s.replaceAll('[[' + term.stmt + ']]', val);
@@ -49,5 +50,3 @@ class BeruangTextNode extends BeruangNodeResolver(Object) {
   }
 
 }
-
-export {BeruangTextNode};

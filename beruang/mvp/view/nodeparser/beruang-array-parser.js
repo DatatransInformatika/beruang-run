@@ -1,13 +1,18 @@
-import {BeruangTemplateResolver} from './beruang-template-resolver.js';
-
-class BeruangTemplateArray extends BeruangTemplateResolver(Object) {
+export const BeruangArrayParser = (base) =>
+class extends base {
   constructor() {
     super();
   }
 
-  /*override parent method*/
-  parse(node, presenter, propNodeMap) {
-    super.parse(node, presenter, propNodeMap);
+  get arrayParser() {
+    return this;
+  }
+
+  parseArray(node, presenter, propNodeMap, nodeParser, templateParser,
+    templateAttr)
+  {
+    templateParser.parseTemplate(node, presenter, propNodeMap, nodeParser,
+      templateAttr);
     let item = node.getAttribute('data-item') || 'item';
     item = item.trim();
     let idx = node.getAttribute('data-index') || 'i';
@@ -15,19 +20,18 @@ class BeruangTemplateArray extends BeruangTemplateResolver(Object) {
     node.tmpl = {'fldItem':item, 'fldIdx':idx};
   }
 
-  /*override parent abstract method*/
-  solve(view, node, propNodeMap) {
+  solveArray(view, node, propNodeMap, nodeParser, templateParser) {
     let term = node.terms[0];
-    let val = this.nodeValue(term, view);
+    let val = nodeParser.nodeValue(term, view);
     if(val==null) {
       return;
     }
     if(val.constructor.name!=='Array'){
-      val = this.coercer.toArray(val);
+      val = nodeParser.coercer.toArray(val);
     }
 
     if(node.clones) {
-      this.removeClones(node.clones, propNodeMap);
+      templateParser.removeClones(node.clones, propNodeMap);
     }
 
     node.clones = [];
@@ -36,10 +40,12 @@ class BeruangTemplateArray extends BeruangTemplateResolver(Object) {
     });
   }
 
-  splice(nodes, startIdx, insertCount, removeCount, propNodeMap) {
+  splice(nodes, startIdx, insertCount, removeCount, propNodeMap, nodeParser,
+    templateParser, templateAttr)
+  {
     let ret = {'clones':[], 'substitutes': []};
     nodes.forEach((node, i) => {
-      if(!node.hasAttribute(this.stmtAttribute())){
+      if(!node.hasAttribute(templateAttr)){
         return;
       }
 
@@ -54,7 +60,7 @@ class BeruangTemplateArray extends BeruangTemplateResolver(Object) {
           for(let j=node.clones.length-1; j>=0; j--) {
             let clone = node.clones[j];
             if(clone.arrayTemplate.idx==idx){
-              this.removeClone(clone, propNodeMap);
+              templateParser.removeClone(clone, propNodeMap);
               node.clones.splice(j, 1);
             }
           }
@@ -88,16 +94,15 @@ class BeruangTemplateArray extends BeruangTemplateResolver(Object) {
             let newIdx = clone.arrayTemplate.idx + offset;
             let fldIdx = node.tmpl.fldIdx;
             clone.arrayTemplate.idx = newIdx;
-            if(clone.term) {
-              this.pathSubstitute(clone, fldIdx, newIdx);
+            if(clone.term && nodeParser.pathSubstitute(clone, fldIdx, newIdx)) {
               ret.substitutes.push(clone);
             }
             if(clone.childNodes && clone.childNodes.length>0) {
               this.termedClones(node,
                 (_node, arrTmpl)=>{
-                  return this.pathSubstitute(_node, fldIdx, newIdx);
+                  return nodeParser.pathSubstitute(_node, fldIdx, newIdx);
                 },
-                clone.childNodes, ret.substitutes, null);
+                clone.childNodes, ret.substitutes, null, nodeParser);
             }
             clone = clone.nextSibling;
           }
@@ -135,10 +140,11 @@ class BeruangTemplateArray extends BeruangTemplateResolver(Object) {
     }
   }
 
-  termedClones(templateNode, equalFunc, nodes, termedNodes, arrayTmplClones)
+  termedClones(templateNode, equalFunc, nodes, termedNodes, arrayTmplClones,
+    nodeParser)
   {
     nodes.forEach((node, i) => {
-      let arrayTemplate = this.arrayTemplate(node);
+      let arrayTemplate = nodeParser.arrayTemplate(node);
       if(arrayTemplate && arrayTemplate.node===templateNode
         && equalFunc(node, arrayTemplate))
       {
@@ -146,7 +152,7 @@ class BeruangTemplateArray extends BeruangTemplateResolver(Object) {
           termedNodes.push(node);
           if(arrayTmplClones) {
             if( node.localName==='template' &&
-              node.hasAttribute(this.stmtAttribute()) )
+              node.hasAttribute(this.templateAttribute()) )
             {
               arrayTmplClones.push(node);
             }
@@ -155,16 +161,8 @@ class BeruangTemplateArray extends BeruangTemplateResolver(Object) {
       }
       if(node.childNodes && node.childNodes.length>0) {
         this.termedClones(templateNode, equalFunc, node.childNodes,
-          termedNodes, arrayTmplClones);//recursive
+          termedNodes, arrayTmplClones, nodeParser);//recursive
       }
     });
   }
-
-  /*override parent abstract method*/
-  stmtAttribute() {
-    return 'data-array';
-  }
-
 }
-
-export {BeruangTemplateArray};

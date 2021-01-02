@@ -1,15 +1,24 @@
-import {BeruangTemplateResolver} from './beruang-template-resolver.js';
-
-class BeruangTemplateSwitch extends BeruangTemplateResolver(Object) {
+export const BeruangSwitchParser = (base) =>
+class extends base {
   constructor() {
     super();
   }
 
-  /*override parent abstract method*/
-  solve(view, node, propNodeMap) {
+  get switchParser() {
+    return this;
+  }
+
+  parseSwitch(node, presenter, propNodeMap, nodeParser, templateParser,
+    templateAttr)
+  {
+    templateParser.parseTemplate(node, presenter, propNodeMap, nodeParser,
+      templateAttr);
+  }
+
+  solveSwitch(view, node, propNodeMap, nodeParser, templateParser) {
     let term = node.terms[0];
-    let val = this.nodeValue(term, view);
-    let show = this.coercer.toBoolean(val);
+    let val = nodeParser.nodeValue(term, view);
+    let show = nodeParser.coercer.toBoolean(val);
     if(term.neg) {
       show = !show;
     }
@@ -29,16 +38,9 @@ class BeruangTemplateSwitch extends BeruangTemplateResolver(Object) {
       }
     } else {
       if(node.clones) {
-        this.removeClones(node.clones, propNodeMap);
+        templateParser.removeClones(node.clones, propNodeMap);
         node.clones = null;
       }
     }
   }
-
-  /*override parent abstract method*/
-  stmtAttribute() {
-    return 'data-switch';
-  }
 }
-
-export {BeruangTemplateSwitch};

@@ -1,8 +1,7 @@
 import {BeruangCoercer} from '../../util/beruang-coercer.js';
-import {BeruangArray} from './beruang-array.js';
 
 export const BeruangProperty = (base) =>
-class extends BeruangArray(base) {
+class extends base {
   constructor() {
     super();
     this.prop = {};
