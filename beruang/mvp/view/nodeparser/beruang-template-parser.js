@@ -2,14 +2,14 @@ class BeruangTemplateParser {
 
   constructor() {}
 
-  parseTemplate(node, presenter, propNodeMap, nodeParser, tmplAttr) {
+  _parseTemplate(node, presenter, propNodeMap, nodeParser, tmplAttr) {
     let stmt = node.getAttribute(tmplAttr) || '';
     stmt = stmt.toString();
     if(stmt.length<1){
       return;
     }
-    let obj = nodeParser.tmplSimple(stmt, node, presenter, propNodeMap)
-      || nodeParser.tmplFunc(stmt, node, presenter, propNodeMap);
+    let obj = nodeParser._tmplSimple(stmt, node, presenter, propNodeMap)
+      || nodeParser._tmplFunc(stmt, node, presenter, propNodeMap);
     if(obj) {
       if(!node.terms) {
         node.terms = [];
@@ -20,7 +20,7 @@ class BeruangTemplateParser {
     }
   }
 
-  removePropNode(node, propNodeMap) {
+  _removePropNode(node, propNodeMap) {
     if(node.props) {
       node.props.forEach((prop, i) => {
         let arr = propNodeMap[prop];
@@ -34,22 +34,22 @@ class BeruangTemplateParser {
     }
     let el = node.firstChild;
     while(el) {
-      this.removePropNode(el, propNodeMap);//recursive
+      this._removePropNode(el, propNodeMap);//recursive
       el = el.nextSibling;
     }
   }
 
-  removeClones(clones, propNodeMap) {
+  _removeClones(clones, propNodeMap) {
     clones.forEach((clone, i) => {
-      this.removeClone(clone, propNodeMap);
+      this._removeClone(clone, propNodeMap);
     });
   }
 
-  removeClone(clone, propNodeMap) {
-    this.removePropNode(clone, propNodeMap);
+  _removeClone(clone, propNodeMap) {
+    this._removePropNode(clone, propNodeMap);
     clone.parentNode.removeChild(clone);
     if(clone.clones) {
-      this.removeClones(clone.clones, propNodeMap);//recursive
+      this._removeClones(clone.clones, propNodeMap);//recursive
       clone.clones = null;
     };
   }

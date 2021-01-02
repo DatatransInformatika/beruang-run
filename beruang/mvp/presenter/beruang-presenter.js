@@ -9,19 +9,19 @@ class extends BeruangProperty(base) {
     let cls = this.constructor;
     while(cls) {
       if(cls.properties) {
-        this.setProperty(cls.properties);
+        this._setProperty(cls.properties);
       }
       cls = Object.getPrototypeOf(cls);//parent
     }
 
-    viewFactory.createView((viewClass, tmpl)=>{
-      this.view = new viewClass.prototype.constructor();
-      this.view.presenter = this;
+    viewFactory._createView((viewClass, tmpl)=>{
+      this._view = new viewClass.prototype.constructor();
+      this._view._presenter = this;
       let shadowRoot = this.attachShadow({mode: 'open'});
       shadowRoot.appendChild(tmpl.content.cloneNode(true));
       let nodes = [];
-      this.view.parseTemplate(shadowRoot, nodes);
-      this.view.solveNode(nodes);
+      this._view._parseNode(shadowRoot, nodes);
+      this._view._solveNode(nodes);
     });
   }
 
@@ -29,11 +29,11 @@ class extends BeruangProperty(base) {
     window.customElements.whenDefined(this.localName).then(()=>{ f(); });
   }
 
-  get view() {
-    return this._view;
+  get _view() {
+    return this.__view;
   }
 
-  set view(v) {
-    this._view = v;
+  set _view(v) {
+    this.__view = v;
   }
 }

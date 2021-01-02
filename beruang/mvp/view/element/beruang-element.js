@@ -6,16 +6,16 @@ class BeruangElement extends BeruangProperty(BeruangView(HTMLElement)) {
 
   constructor() {
     super();
-    this.createTemplate((tmpl) => {
+    this._createShadow((tmpl) => {
       let shadowRoot = this.attachShadow({mode: 'open'});
       shadowRoot.appendChild(tmpl.content.cloneNode(true));
       let nodes = [];
-      this.parseTemplate(shadowRoot, nodes);
-      this.solveNode(nodes);
+      this._parseNode(shadowRoot, nodes);
+      this._solveNode(nodes);
     });
   }
 
-  createTemplate(templateCallback) {
+  _createShadow(templateCallback) {
     let clsName = this.constructor.name;
     let t = this.constructor._viewTmpl[clsName];
     if(t) {
@@ -28,11 +28,11 @@ class BeruangElement extends BeruangProperty(BeruangView(HTMLElement)) {
     }
   }
 
-  get presenter() {
+  get _presenter() {
     return this;
   }
 
-  get view() {
+  get _view() {
     return this;
   }
 

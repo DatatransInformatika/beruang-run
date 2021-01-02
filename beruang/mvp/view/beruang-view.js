@@ -6,77 +6,77 @@ class extends base {
 
   constructor() {
     super();
-    this.propNodeMap = {};
+    this._propNodeMap = {};
   }
 
-  set presenter(p) {
-    this._presenter = p;
+  set _presenter(p) {
+    this.__presenter = p;
   }
 
-  get presenter() {
-    return this._presenter;
+  get _presenter() {
+    return this.__presenter;
+  }
+  set _propNodeMap(obj) {
+
+    this.__propNodeMap = obj;
   }
 
-  set propNodeMap(obj) {
-    this._propNodeMap = obj;
+  get _propNodeMap() {
+    return this.__propNodeMap;
   }
 
-  get propNodeMap() {
-    return this._propNodeMap;
-  }
-
-  get nodeParser() {
-    if(!this._nodeParser) {
-      this._nodeParser = new BeruangNodeParser();
+  get _nodeParser() {
+    if(!this.__nodeParser) {
+      this.__nodeParser = new BeruangNodeParser();
     }
-    return this._nodeParser;
+    return this.__nodeParser;
   }
 
-  get templateParser() {
-    if(!this._templateParser) {
-      this._templateParser = new BeruangTemplateParser();
+  get _templateParser() {
+    if(!this.__templateParser) {
+      this.__templateParser = new BeruangTemplateParser();
     }
-    return this._templateParser;
+    return this.__templateParser;
   }
 
-  parseTemplate(root, nodes) {
+  _parseNode(root, nodes) {
     root.childNodes.forEach((node, i) => {
-      this.parseNode(node, nodes);
+      this._parseNodeDo(node, nodes);
     });
   }
 
-  parseNode(node, nodes) {
+  _parseNodeDo(node, nodes) {
     if(node.nodeType===3/*Text*/) {
-      if(this.textParser) {
-        this.textParser.parseText(node, this.presenter, this.propNodeMap,
-          this.nodeParser);
+      if(this._textParser) {
+        this._textParser._parseText(node, this._presenter, this._propNodeMap,
+          this._nodeParser);
       }
     } else if(node.nodeType==1/*Element*/) {
       if(node.localName==='style') {
-        if(this.styleParser) {
-          this.styleParser.parseStyle(node, this.presenter);
+        if(this._styleParser) {
+          this._styleParser._parseStyle(node, this._presenter);
           this.styleNode = node;
           nodes.push(node);
         }
       } else if(node.localName==='template') {
-        if( node.hasAttribute(this.switchAttribute) ) {
-          if(this.switchParser) {
-            this.switchParser.parseSwitch(node, this.presenter,
-              this.propNodeMap, this.nodeParser, this.templateParser,
-              this.switchAttribute);
+        if( node.hasAttribute(this._switchAttribute) ) {
+          if(this._switchParser) {
+            this._switchParser._parseSwitch(node, this._presenter,
+              this._propNodeMap, this._nodeParser, this._templateParser,
+              this._switchAttribute);
           }
-        } else if( node.hasAttribute(this.arrayAttribute) ) {
-          if(this.arrayParser) {
-            this.arrayParser.parseArray(node, this.presenter, this.propNodeMap,
-              this.nodeParser, this.templateParser, this.arrayAttribute);
+        } else if( node.hasAttribute(this._arrayAttribute) ) {
+          if(this._arrayParser) {
+            this._arrayParser._parseArray(node, this._presenter, this._propNodeMap,
+              this._nodeParser, this._templateParser, this._arrayAttribute);
           }
         }
       } else {
         if(this.elementParser) {
-          this.elementParser.parseElement(node, this.presenter,
-            this.propNodeMap, this.nodeParser);
+          this.elementParser._parseElement(node, this._presenter,
+            this._propNodeMap, this._nodeParser);
         }
-        this.parseTemplate(node, nodes);//recursive
+        this._parseNode(node, nodes);//recursive
       }
     }
     if(node.terms) {
@@ -84,21 +84,21 @@ class extends base {
     }
   }
 
-  updateNode(props) {
+  _updateNode(props) {
     let rslt = [];
     props.forEach((path, i) => {
-      let obj = this.pathNodes( path, (node)=>true );
+      let obj = this._pathNodes( path, (node)=>true );
       if(obj.finalNodes.length>0) {
         obj.finalNodes.forEach((node, i) => {
           let substitute = false;
           if(node.nodeType===3/*Text*/) {
-            substitute = !!this.textParser;
+            substitute = !!this._textParser;
           } else if(node.nodeType==1/*Element*/) {
             if(node.localName==='template') {
-              if( node.hasAttribute(this.switchAttribute) ) {
-                substitute = !!this.switchParser;
-              } else if( node.hasAttribute(this.arrayAttribute) ) {
-                substitute = !!this.arrayParser;
+              if( node.hasAttribute(this._switchAttribute) ) {
+                substitute = !!this._switchParser;
+              } else if( node.hasAttribute(this._arrayAttribute) ) {
+                substitute = !!this._arrayParser;
               }
             } else {
               if(node.localName!='style') {
@@ -107,8 +107,8 @@ class extends base {
             }
           }
           if(substitute) {
-            let val = this.presenter.get(path);
-            if(this.nodeParser.pathSubstitute(node, obj.finalPath, val)){
+            let val = this._presenter.get(path);
+            if(this._nodeParser._pathSubstitute(node, obj.finalPath, val)){
                 rslt.push(node);
             }
           }
@@ -120,29 +120,29 @@ class extends base {
       }//if(obj.finalNodes.length>0) {
     });//props.forEach((path, i) => {
     if(rslt.length>0) {
-        this.solveNode(rslt);
+        this._solveNode(rslt);
     }
   }
 
-  solveNode(nodes) {
+  _solveNode(nodes) {
     let clones = [];
     nodes.forEach((node, i) => {
       if(node.nodeType===3/*Text*/) {
-        if(this.textParser) {
-          this.textParser.solveText(this, node, this.propNodeMap,
-            this.nodeParser);
+        if(this._textParser) {
+          this._textParser._solveText(this, node, this._propNodeMap,
+            this._nodeParser);
         }
       } else if(node.nodeType==1/*Element*/) {
         if(node.localName==='template') {
-          if( node.hasAttribute(this.switchAttribute) ) {
-            if(this.switchParser) {
-              this.switchParser.solveSwitch(this, node, this.propNodeMap,
-                this.nodeParser, this.templateParser);
+          if( node.hasAttribute(this._switchAttribute) ) {
+            if(this._switchParser) {
+              this._switchParser._solveSwitch(this, node, this._propNodeMap,
+                this._nodeParser, this._templateParser);
             }
-          } else if( node.hasAttribute(this.arrayAttribute) ) {
-            if(this.arrayParser) {
-              this.arrayParser.solveArray(this, node, this.propNodeMap,
-                this.nodeParser, this.templateParser);
+          } else if( node.hasAttribute(this._arrayAttribute) ) {
+            if(this._arrayParser) {
+              this._arrayParser._solveArray(this, node, this._propNodeMap,
+                this._nodeParser, this._templateParser);
             }
           }
           if(node.clones) {
@@ -151,67 +151,67 @@ class extends base {
         } else {
           if(node.localName!='style') {
             if(this.elementParser) {
-              this.elementParser.solveElement(this, node, this.propNodeMap,
-                this.nodeParser);
+              this.elementParser._solveElement(this, node, this._propNodeMap,
+                this._nodeParser);
             }
           }
         }
       }
     });
-    this.solveClones(clones);
+    this._solveClones(clones);
   }
 
-  arraySplice(path, startIdx, count, removeCount) {
-    if(this.arrayParser) {
-      let obj = this.pathNodes( path, (node)=>node.hasAttribute &&
-        node.hasAttribute(this.arrayAttribute) );
+  _arraySplice(path, startIdx, count, removeCount) {
+    if(this._arrayParser) {
+      let obj = this._pathNodes( path, (node)=>node.hasAttribute &&
+        node.hasAttribute(this._arrayAttribute) );
       if(obj.finalNodes.length>0) {
-        let rslt = this.arrayParser.splice(obj.finalNodes, startIdx, count,
-          removeCount, this.propNodeMap, this.nodeParser, this.templateParser,
-          this.arrayAttribute);
+        let rslt = this._arrayParser._splice(obj.finalNodes, startIdx, count,
+          removeCount, this._propNodeMap, this._nodeParser, this._templateParser,
+          this._arrayAttribute);
         if(rslt.substitutes.length>0) {
           obj.pathNodes = obj.pathNodes.concat(rslt.substitutes);
         }
-        this.solveClones(rslt.clones);
+        this._solveClones(rslt.clones);
         if(obj.pathNodes.length>0) {
-          this.solveNode(obj.pathNodes);
+          this._solveNode(obj.pathNodes);
         }
       }
     }
   }
 
   updateStyle(selector, rule, dedup) {
-    if(this.styleNode && this.styleParser) {
-      this.styleParser.updateStyle(this.styleNode, selector, rule, dedup, this.presenter);
+    if(this.styleNode && this._styleParser) {
+      this._styleParser._updateStyle(this.styleNode, selector, rule, dedup, this._presenter);
     }
   }
 
   removeStyle(selector) {
-    if(this.styleNode && this.styleParser) {
-      this.style.removeStyle(this.styleNode, selector, this.presenter);
+    if(this.styleNode && this._styleParser) {
+      this._styleParser._removeStyle(this.styleNode, selector, this._presenter);
     }
   }
 
-  solveClones(clones) {
+  _solveClones(clones) {
     if(clones.length>0) {
       let nodes = [];
       clones.forEach((clone, i) => {
         let ns = [];
-        this.parseNode(clone, ns);
+        this._parseNodeDo(clone, ns);
         nodes = nodes.concat(ns);
       });
-      this.solveNode(nodes);
+      this._solveNode(nodes);
     }
   }
 
-  pathNodes(path, finalMatchFunc) {
+  _pathNodes(path, finalMatchFunc) {
     let paths = path.split('.');
     let result = {'pathNodes':[], 'finalNodes':[], 'finalPath':paths[0]};
-    this.pathNodesDo(paths, 1, this.propNodeMap[paths[0]], finalMatchFunc, result);
+    this._pathNodesDo(paths, 1, this._propNodeMap[paths[0]], finalMatchFunc, result);
     return result;
   }
 
-  pathNodesDo(paths, startIdx, nodes, finalMatchFunc, result)
+  _pathNodesDo(paths, startIdx, nodes, finalMatchFunc, result)
   {
     if(!(nodes && nodes.length>0)){
       return;
@@ -229,9 +229,9 @@ class extends base {
     }
 
     nodes.forEach((node, i) => {
-      if(node.hasAttribute && node.hasAttribute(this.arrayAttribute)) {
-        if(this.arrayParser) {
-          let attr = node.getAttribute ? node.getAttribute(this.arrayAttribute)
+      if(node.hasAttribute && node.hasAttribute(this._arrayAttribute)) {
+        if(this._arrayParser) {
+          let attr = node.getAttribute ? node.getAttribute(this._arrayAttribute)
             : null;
           if( attr && attr==result.finalPath ) {
             if(startIdx >= paths.length) {
@@ -242,11 +242,11 @@ class extends base {
               return;
             }
             let nexts = [];
-            this.arrayParser.termedClones(node,
+            this._arrayParser._termedClones(node,
               (_node, arrTmpl)=>arrTmpl.idx==arrIdx,
-              node.clones, nexts, null, this.nodeParser);
+              node.clones, nexts, null, this._nodeParser);
             result.finalPath = node.tmpl.fldItem;
-            this.pathNodesDo(paths, startIdx+1, nexts, finalMatchFunc, result);
+            this._pathNodesDo(paths, startIdx+1, nexts, finalMatchFunc, result);
           }
         }
       } else {
@@ -257,7 +257,7 @@ class extends base {
             result.pathNodes.push(node);
           return;
         }
-        if(node.terms && this.nodeParser.pathExists(node.terms, result.finalPath)){
+        if(node.terms && this._pathExists(node.terms, result.finalPath)){
           if(startIdx >= paths.length && finalMatchFunc(node) ) {
             result.finalNodes.push(node);
           } else {
@@ -268,16 +268,25 @@ class extends base {
     });
   }
 
-  get switchAttribute() {
+  _pathExists(terms, path) {
+    for(let i=0, len=terms.length; i<len ;i++){
+      if(terms[i].paths.indexOf(path)>-1){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  get _switchAttribute() {
     return 'data-switch';
   }
 
-  get arrayAttribute() {
+  get _arrayAttribute() {
     return 'data-array';
   }
 
 //abstract:BEGIN
-  static getTemplate() {
+  static get template() {
     throw new Error('BeruangView: you have to call getTemplate method ' +
       'implemented by child only!');
   }

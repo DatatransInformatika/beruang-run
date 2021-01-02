@@ -4,21 +4,21 @@ class extends base {
     super();
   }
 
-  get switchParser() {
+  get _switchParser() {
     return this;
   }
 
-  parseSwitch(node, presenter, propNodeMap, nodeParser, templateParser,
+  _parseSwitch(node, presenter, propNodeMap, nodeParser, templateParser,
     templateAttr)
   {
-    templateParser.parseTemplate(node, presenter, propNodeMap, nodeParser,
+    templateParser._parseTemplate(node, presenter, propNodeMap, nodeParser,
       templateAttr);
   }
 
-  solveSwitch(view, node, propNodeMap, nodeParser, templateParser) {
+  _solveSwitch(view, node, propNodeMap, nodeParser, templateParser) {
     let term = node.terms[0];
-    let val = nodeParser.nodeValue(term, view);
-    let show = nodeParser.coercer.toBoolean(val);
+    let val = nodeParser._nodeValue(term, view);
+    let show = nodeParser._coercer.toBoolean(val);
     if(term.neg) {
       show = !show;
     }
@@ -38,7 +38,7 @@ class extends base {
       }
     } else {
       if(node.clones) {
-        templateParser.removeClones(node.clones, propNodeMap);
+        templateParser._removeClones(node.clones, propNodeMap);
         node.clones = null;
       }
     }

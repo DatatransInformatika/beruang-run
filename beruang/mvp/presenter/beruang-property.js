@@ -4,19 +4,19 @@ export const BeruangProperty = (base) =>
 class extends base {
   constructor() {
     super();
-    this.prop = {};
+    this._prop = {};
   }
 
-  get prop() {
-    return this._prop;
+  get _prop() {
+    return this.__prop;
   }
 
-  set prop(obj) {
-    this._prop = obj;
+  set _prop(obj) {
+    this.__prop = obj;
   }
 
   get(path) {
-    let objFld = this.getObjField(path);
+    let objFld = this._getObjField(path);
     if(!objFld) {
       return null;
     }
@@ -24,13 +24,13 @@ class extends base {
   }
 
   set(path, val) {
-    let objFld = this.getObjField(path);
+    let objFld = this._getObjField(path);
     if(objFld) {
       let oldVal = objFld.fld ? objFld.obj[objFld.fld] : objFld.obj;
       if(val!=oldVal) {
         if(objFld.fld) {
           objFld.obj[objFld.fld] = val;
-          this.view.updateNode([path]);
+          this._view._updateNode([path]);
         } else {
           this[objFld.prop] = val;
         }
@@ -38,14 +38,14 @@ class extends base {
     }
   }
 
-  get coercer() {
-    if(!this._coercer) {
-      this._coercer = new BeruangCoercer();
+  get _coercer() {
+    if(!this.__coercer) {
+      this.__coercer = new BeruangCoercer();
     }
-    return this._coercer;
+    return this.__coercer;
   }
 
-  setProperty(props) {
+  _setProperty(props) {
     for (let [p, v] of Object.entries(props)) {
       if(this.hasOwnProperty(p)) {
         continue;
@@ -57,13 +57,13 @@ class extends base {
 
       if(validType) {
         Object.defineProperty(this, p,
-          { get:this.getter(p, v.type),
-            set:this.setter(p, v.type, v.observer, v.reflectToAttribute)
+          { get:this._getter(p, v.type),
+            set:this._setter(p, v.type, v.observer, v.reflectToAttribute)
           });
 
         let _v;
 
-        let attr = this.toAttribute(p);
+        let attr = this._toAttribute(p);
         if( this.hasAttribute(attr) ) {
             _v = this.getAttribute(attr);
         } else {
@@ -74,33 +74,33 @@ class extends base {
             }
         }
 
-        this[p] = this.coercer.coerce(v.type, _v);
+        this[p] = this._coercer.coerce(v.type, _v);
       }
     }
   }
 
-  getter(p, vt) {
+  _getter(p, vt) {
     return ()=>{
-      return this.prop[p];
+      return this._prop[p];
     };
   }
 
-  setter(p, vt, observer, reflectToAttr) {
+  _setter(p, vt, observer, reflectToAttr) {
     return (val)=>{
       if(val===undefined) {
         val = null;
       }
 
       let old = this[p];
-      this.prop[p] = val;
+      this._prop[p] = val;
       val = this[p];
 
       if(val===old) {
           return;
       }
 
-      if(this.view) {
-        this.delayedUpdateNode(p);
+      if(this._view) {
+        this._delayedUpdateNode(p);
       }
 
       if(observer){
@@ -108,7 +108,7 @@ class extends base {
       }
 
       if(reflectToAttr) {
-        let attr = this.toAttribute(p);
+        let attr = this._toAttribute(p);
         if(vt===Boolean) {
           if(val){
             this.setAttribute(attr, '');
@@ -116,18 +116,18 @@ class extends base {
             this.removeAttribute(attr);
           }
         } else {
-          val = this.coercer.coerce(String, val);
+          val = this._coercer.coerce(String, val);
           this.setAttribute(attr, val==null ? '' : val);
         }
       }
     };
   }
 
-  toAttribute(s) {
+  _toAttribute(s) {
     return s.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
   }
 
-  delayedUpdateNode(prop) {
+  _delayedUpdateNode(prop) {
     this._updatedProps = this._updatedProps || [];
     if(this._updatedProps.indexOf(prop)>-1){
       return;
@@ -138,16 +138,16 @@ class extends base {
     }
     this._updateNodeXval = setTimeout(
       ()=>{
-          this.view.updateNode(this._updatedProps);
+          this._view._updateNode(this._updatedProps);
           this._updateNodeXval = null;
           this._updatedProps = null;
       }, 50);
   }
 
-  getObjField(path) {
+  _getObjField(path) {
     let arr = path.split('.');
     let p0 = arr[0];
-    let propKeys = Object.keys(this.prop);
+    let propKeys = Object.keys(this._prop);
     if(propKeys.indexOf(p0)==-1){
       return null;
     }

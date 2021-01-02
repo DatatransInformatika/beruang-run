@@ -3,12 +3,12 @@ import {BeruangViewFactory} from '../beruang/mvp/view/beruang-view-factory.js';
 class SampleViewFactory extends BeruangViewFactory(Object) {
 
   /*override parent abstract method*/
-  static getViewClsName() {
+  static get viewClsName() {
       return 'SampleView';
   }
 
   /*override parent abstract method*/
-  static getViewJs(formfactor) {
+  static viewJs(formfactor) {
     let src;
     switch(formfactor) {
       case 'phone':
