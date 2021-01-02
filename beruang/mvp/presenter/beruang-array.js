@@ -21,8 +21,9 @@ class extends base {
     if(!(arr && arr.length>0)) {
       return null;
     }
+    let len = arr.length;
     let ret = arr.pop();
-    this._view._arraySplice(path, arr.length-1, 0, 1);
+    this._view._arraySplice(path, len-1, 0, 1);
     return ret;
   }
 

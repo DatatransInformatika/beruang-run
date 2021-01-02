@@ -58,17 +58,23 @@ once more [[large(123, label, ADUH)]]</b>
     <br>
     <template data-switch="!show">cond [[address]] <div>conditional [[label]]</div></template>
     <br>
+
     <div part="alert">simpleArray size: [[arrayLen(simpleArray)]]
       <div>simpleArray size 2: [[arrayLen(simpleArray)]]</div>
     </div>
+
     <template data-array="simpleArray" data-item="n" data-index="i">
     <input check value="[[n:input]]"></input>
     <div>[[label]] [[i]] [[n]] [[plusTen(i)]]</div>
     </template>
+    <br>
+    <br>
+
     <template data-array="personArray" data-item="p" data-index="j">
       <div>[[j]] [[p.name]]</div>
       <template data-switch="show">cond [[address]] <div>conditional [[label]]</div></template>
     </template>
+
     <div>[[student.subject]] [[student.mark]]</div>
     <template data-switch="show">
       <template data-array="nestedArray" data-item="p" data-index="j">
