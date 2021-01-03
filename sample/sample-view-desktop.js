@@ -29,10 +29,14 @@ class SampleView extends BeruangView(
       font-size:20px;
       font-weight:bold;
       --button-color:blue;
+      --blue-button:{
+        color:var(--button-color);
+        font-size:30px;
+      }
     }
 
     :host button {
-      color:var(--button-color);
+      @apply --blue-button;
     }
 
     :host > input {
@@ -49,7 +53,7 @@ class SampleView extends BeruangView(
     </style>
 <input value="[[label:input]]"></input>
 <button on-hit="hit">click [[label]]</button>
-    <div><div part="alert">ABC</div></div>
+    <div><div part='alert'>ABC</div></div>
 [[address]]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>[[label]]
 Desktop [[large (123, label, ADUH)]] at [[address]]
 once more [[large(123, label, ADUH)]]</b>
@@ -59,7 +63,7 @@ once more [[large(123, label, ADUH)]]</b>
     <template data-switch="!show">cond [[address]] <div>conditional [[label]]</div></template>
     <br>
 
-    <div part="alert">simpleArray size: [[arrayLen(simpleArray)]]
+    <div>simpleArray size: [[arrayLen(simpleArray)]]
       <div>simpleArray size 2: [[arrayLen(simpleArray)]]</div>
     </div>
 

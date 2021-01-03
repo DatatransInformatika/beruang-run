@@ -5,7 +5,7 @@
   <title>Beruang</title>
   <script type="application/javascript" src="./beruang/util/beruang-init.js" async="false"></script>
   <script type="module" src="./sample/sample-presenter.js" async="false"></script>
-  <script type="module" src="./beruang/mvp/view/element/layoutmanager/beruang-layout-manager.js" async="false"></script>
+  <script type="module" src="./beruang/mvp/view/element/layoutmanager/beruang-fit.js" async="false"></script>
   <script type="application/javascript" async="false">
   function f() {
     /*let el = document.querySelector('sample-presenter');
@@ -16,13 +16,10 @@
   }
   </script>
   <style>
-  *::part(alert) {
-    color:yellow;
-  }
-</style>
+  </style>
 </head>
 <body onload="f()">
   <sample-presenter>abc</sample-presenter>
-  <!--beruang-layout-manager></beruang-layout-manager-->
+  <!--beruang-fit></beruang-fit-->
 </body>
 </html>

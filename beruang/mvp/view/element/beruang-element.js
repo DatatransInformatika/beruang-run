@@ -1,7 +1,8 @@
 import {BeruangProperty} from '../../presenter/beruang-property.js'
 import {BeruangView} from '../beruang-view.js'
 
-class BeruangElement extends BeruangProperty(BeruangView(HTMLElement)) {
+export const BeruangElement = (base) =>
+class extends BeruangProperty(BeruangView(base)) {
   static _viewTmpl = {};
 
   constructor() {
@@ -43,5 +44,3 @@ class BeruangElement extends BeruangProperty(BeruangView(HTMLElement)) {
   }
 //abstract:END
 }
-
-export {BeruangElement};

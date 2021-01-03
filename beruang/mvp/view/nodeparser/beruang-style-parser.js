@@ -10,16 +10,18 @@ class extends base {
   }
 
   _parseStyle(node, presenter) {
-    let obj = {'rules':[], 'include':false};
-    this._fetchRules(node, obj);
-    node.rules = obj.rules;
-    let rslt = this._parseStyleDo(node.rules, presenter);
-    if(obj.include || rslt.inject) {
-      node.textContent = rslt.stmt;
+    let obj = {
+      'css':{'mixins':{},'rules':[]},
+      'hasinclude':false,
+      'stmt':''};
+    this._fetchRules(node, obj, presenter);
+    node['css'] = obj['css'];
+    if( obj.hasinclude || Object.keys(obj.css.mixins).length>0 ) {
+      node.textContent = obj.stmt;
     }
   }
 
-  _fetchRules(styleNode, obj) {
+  _fetchRules(styleNode, obj, presenter) {
     if(styleNode.hasAttribute('include')){
       let attr = styleNode.getAttribute('include').trim();
       attr = attr.replace(/[ ]+/g, ' ');
@@ -31,35 +33,112 @@ class extends base {
         let el = document.createElement(include);
         let style = el.shadowRoot.querySelector('style');
         if(style) {
-          obj.include = true;
+          obj.hasinclude = true;
           this._fetchRules(style, obj);
         }
         el = null;
       });
     }
-    let arr = styleNode.textContent.match(/([^{]+{[^{]*})/g);
-    if(arr && arr.length>0) {
-      obj.rules = obj.rules.concat(arr);
+
+    let s = styleNode.textContent;
+    s = this._removeComment(s);
+    let rules = this._ruleSplit(s);
+    rules.forEach((rule, i) => {
+      // (selector) => (item contents without bracket)
+      let ms = rule.match(/([^}{]+){((?:.|\n)+)}/);
+      if(!ms) {
+        return null;
+      }
+      let selector = this._trimSelector(ms[1]);
+      let ret = this._ruleToObj(selector, ms[2], presenter, obj.css.mixins, true);
+      if(ret) {
+        obj.css.rules.push(ret.ruleObj);
+        if(ret.styleStmt) {
+          obj.stmt += ret.styleStmt;
+        }
+      }
+    });
+  }
+
+  _ruleToObj(selector, property, presenter, mixins, initial) {
+    //split property, aware of mixins
+    let props = property.match(/(([^}{;]+;)|([^}{]+{(.|\n)+});?)/g);
+    if(!props) {
+      return null;
     }
+
+    let ruleObj = {'selector':selector, 'props':[]};
+
+    let parted = this._partScope(selector);
+    if(parted) {
+      ruleObj.props.push(property);
+      this._parted(ruleObj, presenter, parted[1]);
+      return {'ruleObj':ruleObj};
+    }
+
+    let styleStmt = initial ? (selector + ' {') : null;
+
+    props.forEach((prop, j) => {
+      let ps = this._splitProps(prop);
+      if(ps) {
+        let key = ps[1].trim();
+        let stmt = ps[2].trim();
+        let mixin = stmt.startsWith('{') && stmt.endsWith('}');
+        if(mixin) {
+          if(initial && selector===':host') {
+            mixins[key] = this._removeBracket(stmt);
+          }
+        } else {
+          ruleObj.props.push(prop);
+          if(styleStmt) {
+            styleStmt += prop;
+          }
+        }
+      } else {
+        let key = this._applyKey(prop);
+        if(key) {
+          ruleObj.props.push(prop);
+          if(initial) {
+            if(mixins.hasOwnProperty(key)) {
+              styleStmt += mixins[key];
+            }
+          }
+        }
+      }
+    });
+
+    if(styleStmt) {
+      styleStmt += '}\n';
+    }
+
+    return {'ruleObj':ruleObj, 'styleStmt':styleStmt};
   }
 
   _updateStyle(node, selector, stmt, dedup, presenter) {
-    selector = this._trimSelector(selector);
-    let parted = this._partScope(selector);
-    if(parted) {//do not update ::part(...)
+    //do not update :host
+    //since mixins is inside :host so no mixins update
+    if( selector.match(/^\s*:host\s*([(].*[)])*\s*$/) ) {
       return;
     }
+    //do not update or insert new ::parted
+    selector = this._trimSelector(selector);
+    if( this._partScope(selector) ){
+      return;
+    }
+
+    let ret = this._ruleToObj(selector, stmt, presenter, node.css.mixins, false);
+    if(!ret){
+      return;
+    }
+
     let hit = false;
-    for(let i=node.rules.length-1; i>=0; i--) {
-      let rule = node.rules[i];
-      let terms = this._ruleSplit(rule);
-      let _selector = terms[1].trim();
-      if(_selector===selector) {
+    for(let i=node.css.rules.length-1; i>=0; i--) {
+      if(node.css.rules[i].selector===selector) {
         if(hit) {//dedup
-          node.rules.splice(i, 1);
+          node.css.rules.splice(i, 1);
         } else {
           hit = true;
-          node.rules[i] = selector + ' {' + stmt + '}';
+          node.css.rules[i] = ret.ruleObj;
           if(!dedup) {
             break;
           }
@@ -67,56 +146,75 @@ class extends base {
       }
     }
     if(!hit) {
-      node.rules.push(selector + ' {' + stmt + '}');
+      node.css.rules.push(ret.ruleObj);
     }
-    let rslt = this._parseStyleDo(node.rules, presenter);
-    node.textContent = rslt.stmt;
+    this._redraw(node);
   }
 
   _removeStyle(node, selector, presenter) {
-    let hit = false;
+    //do not remove :host
+    if( selector.match(/^\s*:host\s*([(].*[)])*\s*$/) ) {
+      return;
+    }
+    //do not remove ::parted
     selector = this._trimSelector(selector);
-    for(let i=node.rules.length-1; i>=0; i--) {
-      let rule = node.rules[i];
-      let terms = this._ruleSplit(rule);
-      let _selector = terms[1].trim();
-      let parted = this._partScope(_selector);
-      if(!parted && _selector===selector) {//can delete ::part(...) selector
-        node.rules.splice(i, 1);
+    if( this._partScope(selector) ){
+      return;
+    }
+
+    let hit = false;
+    for(let i=node.css.rules.length-1; i>=0; i--) {
+      if(node.css.rules[i].selector===selector) {
+        node.css.rules.splice(i, 1);
         hit = true;
       }
     }
     if(hit) {
-      let rslt = this._parseStyleDo(node.rules, presenter);
-      node.textContent = rslt.stmt;
+      this._redraw(node);
     }
   }
 
-  _parseStyleDo(rules, presenter) {
-    let rslt = {'inject':false, 'stmt':''};
-    rules.forEach((rule, i) => {
-      let terms = this._ruleSplit(rule);
-      let selector = this._trimSelector(terms[1]);
-      let stmt = terms[2];
-      rule = selector + ' {' + stmt + '}';
-      rules[i] = rule;//update with trimmed version
-      let parted = this._partScope(selector);
-      if(parted) {
-        document.beruangStyles = document.beruangStyles || [];
-        if(document.beruangStyles.indexOf(selector)===-1) {
-          let scope = parted[1];
-          if(scope===':host') {
-            selector = selector.replace(':host', presenter.localName);
-          }
-          let sheet = this._ensureDocSheet();
-          this._addDocRule(sheet, selector, stmt, 0);
-          document.beruangStyles.push(selector);
-        }
-      } else {
-        rslt.stmt += rule;
+  _redraw(node) {
+    let stmt = '';
+    node.css.rules.forEach((rule, i) => {
+      if( this._partScope(rule.selector) ) {//do not update parted
+        return;
       }
+      stmt +=  rule.selector + ' {';
+      rule.props.forEach((prop, j) => {
+        let ps = this._splitProps(prop);
+        if(ps) {
+          let key = ps[1].trim();
+          if( !node.css.mixins.hasOwnProperty(key) ) {
+            stmt += prop;
+          }
+        } else {
+          let key = this._applyKey(prop);
+          if(key && node.css.mixins.hasOwnProperty(key)) {
+            stmt += node.css.mixins[key];
+          }
+        }
+      });
+      stmt += '}\n';
     });
-    return rslt;
+    node.textContent = stmt;
+  }
+
+  _parted(ruleObj, presenter, scope) {
+    document.beruangStyles = document.beruangStyles || [];
+    if(document.beruangStyles.indexOf(ruleObj.selector)===-1) {
+      if(!scope) {
+        let parted = this._partScope(ruleObj.selector);
+        scope = parted[1];
+      }
+      let selector = ruleObj.selector;
+      if(scope===':host') {
+        selector = selector.replace(':host', presenter.localName);
+      }
+      let sheet = this._ensureDocSheet();
+      this._addDocRule(sheet, selector, ruleObj.props[0], 0);
+      document.beruangStyles.push(selector);
+    }
   }
 
   _ensureDocSheet() {
@@ -138,16 +236,32 @@ class extends base {
     }
   }
 
-  _trimSelector(s) {
-    return s.trim().replace(/[ ]+/g, ' ');
+  _removeComment(s) {
+    return s.replace(/\/\*(.|\n)*?\*\//g, '');
   }
 
   _ruleSplit(s) {
-    return s.match(/([^{]+){([^{]*)}/);
+    return s.match(/[^}{]+{(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*})*}/g);
+  }
+
+  _removeBracket(s) {
+    return s.replace(/^\s*{|}\s*$/g, '');
+  }
+
+  _trimSelector(s) {
+    return s.trim().replace(/[ ]+/g, ' ');
   }
 
   _partScope(s) {
     return s.match(/(\S+)[:]{2}part.*/);
   }
 
+  _splitProps(s) {
+    return s.match(/(.+):((?:.|\n)+);?/);
+  }
+
+  _applyKey(s) {
+    let m = s.match(/(?:@apply\s*)(.+)/);
+    return m ? m[1].trim().replace(/;$/, '') : null;
+  }
 }

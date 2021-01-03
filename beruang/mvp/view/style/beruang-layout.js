@@ -2,8 +2,12 @@
   const template = document.createElement('template');
   template.innerHTML = `
   <style>
-  *::part(bigfont) {
-    font-size:30px;
+  *::part(fit) {
+    position:absolute;
+    top:0px;
+    right:0px;
+    bottom:0px;
+    left:0px;
   }
   </style>`;
 
