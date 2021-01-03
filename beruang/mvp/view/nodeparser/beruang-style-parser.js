@@ -98,10 +98,8 @@ class extends base {
         let key = this._applyKey(prop);
         if(key) {
           ruleObj.props.push(prop);
-          if(initial) {
-            if(mixins.hasOwnProperty(key)) {
-              styleStmt += mixins[key];
-            }
+          if(initial && mixins.hasOwnProperty(key)) {
+            styleStmt += mixins[key];
           }
         }
       }
