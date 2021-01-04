@@ -84,11 +84,10 @@ class extends base {
       if(ps) {
         let key = ps[1].trim();
         let stmt = ps[2].trim();
-        let mixin = stmt.startsWith('{') &&
-          (stmt.endsWith('}') || stmt.endsWith('};'));
+        let mixin = !!stmt.match(/^\s*{[^}]*}\s*;?\s*$/);//brackets
         if(mixin) {
           if(initial && selector===':host') {
-            mixins[key] = this._removeBracket(stmt.replace(/;$/, ''));
+            mixins[key] = this._removeBracket(this._removeSemiColon(stmt));
           }
         } else {
           ruleObj.props.push(prop);
@@ -184,22 +183,26 @@ class extends base {
       if( this._partScope(rule.selector) ) {//do not update parted
         return;
       }
-      stmt +=  rule.selector + ' {';
+      let openStmt = rule.selector + ' {';
+      let _stmt = openStmt;
       rule.props.forEach((prop, j) => {
         let ps = this._splitSelectorProp(prop);
         if(ps) {
           let key = ps[1].trim();
           if( !node.css.mixins.hasOwnProperty(key) ) {
-            stmt += prop;
+            _stmt += prop;
           }
         } else {
           let key = this._applyKey(prop);
           if(key && node.css.mixins.hasOwnProperty(key)) {
-            stmt += this._mixinSubstitute(node.css.mixins, key);
+            _stmt += this._mixinSubstitute(node.css.mixins, key);
           }
         }
       });
-      stmt += '}\n';
+      if(_stmt!=openStmt) {
+          _stmt += '}\n';
+          stmt += _stmt;
+      }
     });
     node.textContent = stmt;
   }
@@ -283,6 +286,10 @@ class extends base {
 
   _applyKey(s) {
     let m = s.match(/(?:@apply\s*)(.+)/);
-    return m ? m[1].trim().replace(/;$/, '') : null;
+    return m ? this._removeSemiColon(m[1].trim()) : null;
+  }
+
+  _removeSemiColon(s) {
+    return s.replace(/;$/, '');
   }
 }
