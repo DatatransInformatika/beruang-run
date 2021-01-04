@@ -9,14 +9,14 @@ class BeruangRow extends BeruangStyleParser(BeruangElement) {
 
   static get template() {
     return `
-    <style include="beruang-layout">
+    <style include="beruang-theme beruang-layout">
     :host {
       display:block;
-      background-color:green;
+      background-color:var(--primary-color, red);
       @apply --layout-row;
     }
     :host([fit-parent]) {
-      @apply --layout-fit;      
+      @apply --layout-fit;
     }
     </style>
     <slot></slot>`;
