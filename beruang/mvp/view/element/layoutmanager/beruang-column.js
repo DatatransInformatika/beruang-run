@@ -13,10 +13,10 @@ class BeruangColumn extends BeruangStyleParser(BeruangElement) {
     :host {
       display:block;
       background-color:green;
+      @apply --layout-column;
     }
     :host([fit-parent]) {
       @apply --layout-fit;
-      @apply --layout-column;
     }
     </style>
     <slot></slot>`;
