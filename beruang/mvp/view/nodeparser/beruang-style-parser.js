@@ -62,7 +62,6 @@ class extends base {
 
   _ruleToObj(selector, property, presenter, mixins, initial) {
     //split property, aware of mixins
-    //let props = property.match(/(([^}{;]+;)|([^}{]+{(.|\n)+});?)/g);
     let props = property.match(/(([^}{;]+;)|([^}{]+{[^}{]+});?)/g);
     if(!props) {
       return null;
