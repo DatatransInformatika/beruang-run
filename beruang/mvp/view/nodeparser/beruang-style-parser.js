@@ -15,7 +15,6 @@ class extends base {
       'hasinclude':false,
       'stmt':''};
     this._fetchRules(node, obj, presenter);
-console.log(obj.stmt);
     node['css'] = obj['css'];
     if( obj.hasinclude || Object.keys(obj.css.mixins).length>0 ) {
       node.textContent = obj.stmt;
@@ -86,10 +85,11 @@ console.log(obj.stmt);
       if(ps) {
         let key = ps[1].trim();
         let stmt = ps[2].trim();
-        let mixin = stmt.startsWith('{') && stmt.endsWith('}');
+        let mixin = stmt.startsWith('{') &&
+          (stmt.endsWith('}') || stmt.endsWith('};'));
         if(mixin) {
           if(initial && selector===':host') {
-            mixins[key] = this._removeBracket(stmt);
+            mixins[key] = this._removeBracket(stmt.replace(/;$/, ''));
           }
         } else {
           ruleObj.props.push(prop);
@@ -264,7 +264,7 @@ console.log(obj.stmt);
 
   _ruleSplit(s) {
     //return s.match(/[^}{]+{(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*})*}/g);
-    return s.match(/[^}{]+{(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*};?)*}/g);
+    return s.match(/[^}{]+{(?:[^}{]+|{(?:[^}{]+|{[^}{]*}[;]?)*})*}/g);
   }
 
   _removeBracket(s) {
