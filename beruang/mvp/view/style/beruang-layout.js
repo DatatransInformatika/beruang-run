@@ -25,6 +25,13 @@
   flex-direction:row;
 };
 
+--layout-column: {
+  @apply --layout-flex;
+  -ms-flex-direction:column;
+  -webkit-flex-direction:column;
+  flex-direction:column;
+};
+
 }
 </style>`;
 

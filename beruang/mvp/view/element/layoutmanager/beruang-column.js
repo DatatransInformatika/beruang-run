@@ -2,7 +2,7 @@ import {BeruangElement} from '../beruang-element.js'
 import {BeruangStyleParser} from '../../nodeparser/beruang-style-parser.js';
 import '../../style/beruang-layout.js'
 
-class BeruangRow extends BeruangStyleParser(BeruangElement) {
+class BeruangColumn extends BeruangStyleParser(BeruangElement) {
   constructor() {
     super();
   }
@@ -16,7 +16,7 @@ class BeruangRow extends BeruangStyleParser(BeruangElement) {
     }
     :host([fit-parent]) {
       @apply --layout-fit;
-      @apply --layout-row;
+      @apply --layout-column;
     }
     </style>
     <slot></slot>`;
@@ -33,4 +33,4 @@ class BeruangRow extends BeruangStyleParser(BeruangElement) {
   }
 }
 
-window.customElements.define('beruang-row', BeruangRow);
+window.customElements.define('beruang-column', BeruangColumn);

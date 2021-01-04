@@ -7,6 +7,7 @@
   <script type="module" src="./sample/sample-presenter.js" async="false"></script>
   <script type="module" src="./beruang/mvp/view/element/layoutmanager/beruang-fit.js" async="false"></script>
   <script type="module" src="./beruang/mvp/view/element/layoutmanager/beruang-row.js" async="false"></script>
+  <script type="module" src="./beruang/mvp/view/element/layoutmanager/beruang-column.js" async="false"></script>
   <script type="application/javascript" async="false">
   function f() {
     /*let el = document.querySelector('sample-presenter');
@@ -22,6 +23,7 @@
 <body onload="f()">
   <!--sample-presenter>abc</sample-presenter-->
   <!--beruang-fit></beruang-fit-->
-  <beruang-row><button>test-1</button><button>test-2</button></beruang-row>
+  <!--beruang-row><button>test-1</button><button>test-2</button></beruang-row-->
+  <beruang-column fit-parent><button>test-1</button><button>test-2</button></beruang-column>
 </body>
 </html>

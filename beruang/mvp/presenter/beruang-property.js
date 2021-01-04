@@ -65,7 +65,11 @@ class extends base {
 
         let attr = this._toAttribute(p);
         if( this.hasAttribute(attr) ) {
-            _v = this.getAttribute(attr);
+            if(v.type===Boolean) {
+              _v = true;
+            } else {
+              _v = this.getAttribute(attr);
+            }
         } else {
             if(typeof v.value === 'function') {
               _v = v.value();
