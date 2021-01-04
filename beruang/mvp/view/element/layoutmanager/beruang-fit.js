@@ -1,19 +1,17 @@
-import {BeruangElement} from '../beruang-element.js'
+import {BeruangElement} from '../beruang-element.js';
+import {BeruangStyleParser} from '../../nodeparser/beruang-style-parser.js';
+import '../../style/beruang-layout.js';
 
-class BeruangFit extends BeruangElement(HTMLElement) {
+class BeruangFit extends BeruangStyleParser(BeruangElement) {
   constructor() {
     super();
   }
 
   static get template() {
     return `
-    <style>
+    <style include="beruang-layout">
     :host {
-      position:absolute;
-      top:0px;
-      right:0px;
-      bottom:0px;
-      left:0px;
+      @apply --layout-fit;
       background-color:red;
     }
     </style>

@@ -1,12 +1,20 @@
 import {BeruangProperty} from '../../presenter/beruang-property.js'
 import {BeruangView} from '../beruang-view.js'
 
-export const BeruangElement = (base) =>
-class extends BeruangProperty(BeruangView(base)) {
+class BeruangElement extends BeruangProperty(BeruangView(HTMLElement)) {
   static _viewTmpl = {};
 
   constructor() {
     super();
+
+    let cls = this.constructor;
+    while(cls) {
+      if(cls.properties) {
+        this._setProperty(cls.properties);
+      }
+      cls = Object.getPrototypeOf(cls);//parent
+    }
+
     this._createShadow((tmpl) => {
       let shadowRoot = this.attachShadow({mode: 'open'});
       shadowRoot.appendChild(tmpl.content.cloneNode(true));
@@ -44,3 +52,5 @@ class extends BeruangProperty(BeruangView(base)) {
   }
 //abstract:END
 }
+
+export {BeruangElement};

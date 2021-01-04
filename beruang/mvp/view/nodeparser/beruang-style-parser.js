@@ -15,6 +15,7 @@ class extends base {
       'hasinclude':false,
       'stmt':''};
     this._fetchRules(node, obj, presenter);
+console.log(obj.stmt);
     node['css'] = obj['css'];
     if( obj.hasinclude || Object.keys(obj.css.mixins).length>0 ) {
       node.textContent = obj.stmt;
@@ -62,7 +63,8 @@ class extends base {
 
   _ruleToObj(selector, property, presenter, mixins, initial) {
     //split property, aware of mixins
-    let props = property.match(/(([^}{;]+;)|([^}{]+{(.|\n)+});?)/g);
+    //let props = property.match(/(([^}{;]+;)|([^}{]+{(.|\n)+});?)/g);
+    let props = property.match(/(([^}{;]+;)|([^}{]+{[^}{]+});?)/g);
     if(!props) {
       return null;
     }
@@ -76,10 +78,11 @@ class extends base {
       return {'ruleObj':ruleObj};
     }
 
-    let styleStmt = initial ? (selector + ' {') : null;
+    let openStmt = selector + ' {';
+    let styleStmt = initial ? openStmt : null;
 
     props.forEach((prop, j) => {
-      let ps = this._splitProps(prop);
+      let ps = this._splitSelectorProp(prop);
       if(ps) {
         let key = ps[1].trim();
         let stmt = ps[2].trim();
@@ -99,14 +102,18 @@ class extends base {
         if(key) {
           ruleObj.props.push(prop);
           if(initial && mixins.hasOwnProperty(key)) {
-            styleStmt += mixins[key];
+            styleStmt += this._mixinSubstitute(mixins, key);
           }
         }
       }
     });
 
     if(styleStmt) {
-      styleStmt += '}\n';
+      if(styleStmt===openStmt) {
+        styleStmt = null;
+      } else {
+        styleStmt += '}\n';
+      }
     }
 
     return {'ruleObj':ruleObj, 'styleStmt':styleStmt};
@@ -180,7 +187,7 @@ class extends base {
       }
       stmt +=  rule.selector + ' {';
       rule.props.forEach((prop, j) => {
-        let ps = this._splitProps(prop);
+        let ps = this._splitSelectorProp(prop);
         if(ps) {
           let key = ps[1].trim();
           if( !node.css.mixins.hasOwnProperty(key) ) {
@@ -189,7 +196,7 @@ class extends base {
         } else {
           let key = this._applyKey(prop);
           if(key && node.css.mixins.hasOwnProperty(key)) {
-            stmt += node.css.mixins[key];
+            stmt += this._mixinSubstitute(node.css.mixins, key);
           }
         }
       });
@@ -234,12 +241,30 @@ class extends base {
     }
   }
 
+  _mixinSubstitute(mixins, key) {
+    let s = mixins[key];
+    let ps = s.match(/[^;]+;/g);
+    s = '';
+    ps.forEach((p, i) => {
+      let mixinKey = this._applyKey(p);
+      if(mixinKey) {
+        if(mixins.hasOwnProperty(mixinKey)) {
+          s += mixins[mixinKey];
+        }
+      } else {
+        s += p;
+      }
+    });
+    return s;
+  }
+
   _removeComment(s) {
     return s.replace(/\/\*(.|\n)*?\*\//g, '');
   }
 
   _ruleSplit(s) {
-    return s.match(/[^}{]+{(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*})*}/g);
+    //return s.match(/[^}{]+{(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*})*}/g);
+    return s.match(/[^}{]+{(?:[^}{]+|{(?:[^}{]+|{[^}{]*})*};?)*}/g);
   }
 
   _removeBracket(s) {
@@ -254,7 +279,7 @@ class extends base {
     return s.match(/(\S+)[:]{2}part.*/);
   }
 
-  _splitProps(s) {
+  _splitSelectorProp(s) {
     return s.match(/(.+):((?:.|\n)+);?/);
   }
 

@@ -39,7 +39,7 @@ class extends base {
     return this.__templateParser;
   }
 
-  _parseNode(root, nodes) {
+  _parseNode(root, nodes) {    
     root.childNodes.forEach((node, i) => {
       this._parseNodeDo(node, nodes);
     });

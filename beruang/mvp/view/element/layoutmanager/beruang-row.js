@@ -1,23 +1,35 @@
 import {BeruangElement} from '../beruang-element.js'
 import {BeruangStyleParser} from '../../nodeparser/beruang-style-parser.js';
-//import '../../style/beruang-layout.js'
+import '../../style/beruang-layout.js'
 
-class BeruangRow extends BeruangElement(BeruangStyleParser(HTMLElement)) {
+class BeruangRow extends BeruangStyleParser(BeruangElement) {
   constructor() {
     super();
   }
 
   static get template() {
     return `
-    <style>
+    <style include="beruang-layout">
     :host {
       display:block;
+      background-color:green;
     }
-    :host([fit]) {
-
+    :host([fit-parent]) {
+      @apply --layout-fit;
+      @apply --layout-row;
     }
     </style>
     <slot></slot>`;
+  }
+
+  static get properties() {
+    return {
+      fitParent: {
+        type:Boolean,
+        value:true,
+        reflectToAttribute:true
+      }
+    }
   }
 }
 
