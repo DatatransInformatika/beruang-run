@@ -31,6 +31,7 @@ class BeruangRow extends BeruangStyleParser(BeruangElement) {
       }
     }
   }
+
 }
 
 window.customElements.define('beruang-row', BeruangRow);

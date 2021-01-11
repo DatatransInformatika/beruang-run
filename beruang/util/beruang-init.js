@@ -33,4 +33,3 @@ if(window.formfactor=="phone" || window.formfactor=="tablet") {
   let head = document.head || document.getElementsByTagName("head")[0];
   head.appendChild(meta);
 }
-console.log(window.theme);

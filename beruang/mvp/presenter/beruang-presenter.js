@@ -25,8 +25,18 @@ class extends BeruangProperty(base) {
     });
   }
 
-  set readyCallback(f) {
-    window.customElements.whenDefined(this.localName).then(()=>{ f(); });
+  set onReady(f) {
+    if(this.shadowRoot) {
+      f();
+    } else {
+      let x = setInterval(
+        ()=>{
+          if(this.shadowRoot) {
+            clearInterval(x);
+            f();
+          }
+        }, 100);
+    }
   }
 
   get _view() {

@@ -99,8 +99,8 @@ class extends base {
         let key = this._applyKey(prop);
         if(key) {
           ruleObj.props.push(prop);
-          if(initial && mixins.hasOwnProperty(key)) {
-            styleStmt += this._mixinSubstitute(mixins, key);
+          if(initial) {
+            styleStmt += this._mixinSubstitute(presenter, mixins, key);
           }
         }
       }
@@ -151,7 +151,7 @@ class extends base {
     if(!hit) {
       node.css.rules.push(ret.ruleObj);
     }
-    this._redraw(node);
+    this._redraw(presenter, node);
   }
 
   _removeStyle(node, selector, presenter) {
@@ -173,11 +173,11 @@ class extends base {
       }
     }
     if(hit) {
-      this._redraw(node);
+      this._redraw(presenter, node);
     }
   }
 
-  _redraw(node) {
+  _redraw(presenter, node) {
     let stmt = '';
     node.css.rules.forEach((rule, i) => {
       if( this._partScope(rule.selector) ) {//do not update parted
@@ -194,8 +194,8 @@ class extends base {
           }
         } else {
           let key = this._applyKey(prop);
-          if(key && node.css.mixins.hasOwnProperty(key)) {
-            _stmt += this._mixinSubstitute(node.css.mixins, key);
+          if(key) {
+            _stmt += this._mixinSubstitute(presenter, node.css.mixins, key);
           }
         }
       });
@@ -243,20 +243,36 @@ class extends base {
     }
   }
 
-  _mixinSubstitute(mixins, key) {
-    let s = mixins[key];
+  _mixinSubstitute(presenter, mixins, key) {
+    let s = this._mixinSubstituteDo(presenter, mixins, key);
+    if(!!!s) {
+      return '';
+    }
     let ps = s.match(/[^;]+;/g);
     s = '';
     ps.forEach((p, i) => {
       let mixinKey = this._applyKey(p);
       if(mixinKey) {
-        if(mixins.hasOwnProperty(mixinKey)) {
-          s += mixins[mixinKey];
+        let t = this._mixinSubstituteDo(presenter, mixins, mixinKey);
+        if(!!t) {
+          s += t;
         }
       } else {
         s += p;
       }
     });
+    return s;
+  }
+
+  _mixinSubstituteDo(presenter, mixins, key) {
+    let s = mixins[key];
+    if(!!!s) {
+      let style = window.getComputedStyle(presenter);
+      s = style.getPropertyValue(key);
+      if(!!s) {
+        s = this._removeBracket(s);
+      }
+    }
     return s;
   }
 
@@ -292,4 +308,5 @@ class extends base {
   _removeSemiColon(s) {
     return s.replace(/;$/, '');
   }
+
 }

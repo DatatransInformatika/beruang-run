@@ -66,6 +66,17 @@ class SamplePresenter extends BeruangPresenter(BeruangArray(HTMLElement)){
     }
   }
 
+  connectedCallback() {
+    this.onReady = ()=>{
+      let el = this.shadowRoot.querySelector('#innermost');
+      console.log('getRootNode', this.getRootNode(), el.getRootNode(), el.getRootNode().getRootNode());
+      while(el) {
+        console.log(el, el.tagName, el.localName, el.host, el.nodeType);
+        el = el.parentNode;
+      }
+    };
+  }
+
   labelChanged(newVal, oldVal) {
     //console.log(newVal, oldVal);
   }
