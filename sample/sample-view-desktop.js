@@ -32,6 +32,7 @@ class SampleView extends BeruangView(
       --blue-button: {
         color:var(--button-color);
         font-size:30px;
+        font-weight:bold;
       }
     }
 
