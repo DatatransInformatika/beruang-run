@@ -19,13 +19,12 @@ class BeruangButton extends BeruangElementParser(BeruangSwitchParser(BeruangText
       @apply --layout-inline;
       @apply --layout-justify-center;
       @apply --layout-align-center;
-      font-family:Roboto;
+      @apply --ctrl-font;      
       min-width:64px;
       min-height:36px;
       background-color:var(--primary-light-color);
       color:var(--primary-text-color);
       padding:16px;
-      font-size:12px;
       text-transform:uppercase;
       text-align:center;
       box-sizing:border-box;
@@ -38,8 +37,8 @@ class BeruangButton extends BeruangElementParser(BeruangSwitchParser(BeruangText
     }
 
     :host([has-icon]) > beruang-icon {
-      width:18px;
-      height:18px;
+      width:var(--ctrl-icon-size);
+      height:var(--ctrl-icon-size);
       margin-right:8px;
     }
     </style>
