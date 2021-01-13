@@ -39,8 +39,10 @@ class BeruangIcon extends BeruangElement {
   _createIcon() {
     this._iconset = window.iconset[this._iconSetName];
     if(!this._iconset) {
-      this._fbind = this._createIcon.bind(this);
-      window.addEventListener('iconset', this._fbind);
+      if(!this._fbind) {
+        this._fbind = this._createIcon.bind(this);
+        window.addEventListener('iconset', this._fbind);
+      }
     } else {
       this._iconset.createIcon(this, this._iconName);
       if(this._fbind) {
