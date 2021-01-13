@@ -31,6 +31,7 @@ class extends base {
         if(objFld.fld) {
           objFld.obj[objFld.fld] = val;
           this._view._updateNode([path]);
+        //homework:multiple observer should handle this
         } else {
           this[objFld.prop] = val;
         }
@@ -108,8 +109,14 @@ class extends base {
       }
 
       if(observer){
-        this[observer].apply(this, [val, old]);
+        if(this[observer]) {
+          this[observer].apply(this, [val, old]);
+        } else if(this._view[observer]) {
+          this._view[observer].apply(this, [val, old]);
+        }
       }
+
+      this._multiObserver(p);
 
       if(reflectToAttr) {
         let attr = this._toAttribute(p);

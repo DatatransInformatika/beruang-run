@@ -16,8 +16,8 @@ class extends base {
   get _presenter() {
     return this.__presenter;
   }
-  set _propNodeMap(obj) {
 
+  set _propNodeMap(obj) {
     this.__propNodeMap = obj;
   }
 
@@ -39,7 +39,7 @@ class extends base {
     return this.__templateParser;
   }
 
-  _parseNode(root, nodes) {    
+  _parseNode(root, nodes) {
     root.childNodes.forEach((node, i) => {
       this._parseNodeDo(node, nodes);
     });
@@ -84,9 +84,9 @@ class extends base {
     }
   }
 
-  _updateNode(props) {
+  _updateNode(paths) {
     let rslt = [];
-    props.forEach((path, i) => {
+    paths.forEach((path, i) => {
       let obj = this._pathNodes( path, (node)=>true );
       if(obj.finalNodes.length>0) {
         obj.finalNodes.forEach((node, i) => {

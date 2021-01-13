@@ -25,7 +25,6 @@ function formfactor() {
   return "desktop";
 };
 window.formfactor = formfactor();
-window.rootpath = window.location.pathname;
 if(window.formfactor=="phone" || window.formfactor=="tablet") {
   let meta = document.createElement("meta");
   meta.name = "viewport";
@@ -33,3 +32,5 @@ if(window.formfactor=="phone" || window.formfactor=="tablet") {
   let head = document.head || document.getElementsByTagName("head")[0];
   head.appendChild(meta);
 }
+window.rootpath = window.location.pathname;
+window.iconset = {};

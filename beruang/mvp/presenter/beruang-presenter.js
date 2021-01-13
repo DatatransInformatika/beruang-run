@@ -1,18 +1,30 @@
 import {BeruangProperty} from './beruang-property.js';
+import {BeruangObserver} from './beruang-observer.js';
 
 export const BeruangPresenter = (base) =>
-class extends BeruangProperty(base) {
+class extends BeruangObserver(BeruangProperty(base)) {
 
   constructor(viewFactory){
     super();
 
+    let prop = {};
+    let obs = [];
     let cls = this.constructor;
     while(cls) {
+      if(cls.observers) {
+        obs = obs.concat(cls.observers);
+      }
       if(cls.properties) {
-        this._setProperty(cls.properties);
+        for (let [p, v] of Object.entries(cls.properties)) {
+          if(!prop.hasOwnProperty(p)) {
+            prop[p]=v;
+          }
+        }
       }
       cls = Object.getPrototypeOf(cls);//parent
     }
+    this._setObserver(obs);
+    this._setProperty(prop);
 
     viewFactory._createView((viewClass, tmpl)=>{
       this._view = new viewClass.prototype.constructor();
@@ -23,6 +35,19 @@ class extends BeruangProperty(base) {
       this._view._parseNode(shadowRoot, nodes);
       this._view._solveNode(nodes);
     });
+  }
+
+  static get properties() {
+    return {
+      connected:{
+        type:Boolean,
+        value:false
+      }
+    };
+  }
+
+  connectedCallback() {
+    this.connected = true;
   }
 
   set onReady(f) {

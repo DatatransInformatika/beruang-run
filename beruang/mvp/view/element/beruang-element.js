@@ -1,19 +1,31 @@
-import {BeruangProperty} from '../../presenter/beruang-property.js'
-import {BeruangView} from '../beruang-view.js'
+import {BeruangProperty} from '../../presenter/beruang-property.js';
+import {BeruangObserver} from '../../presenter/beruang-observer.js';
+import {BeruangView} from '../beruang-view.js';
 
-class BeruangElement extends BeruangProperty(BeruangView(HTMLElement)) {
+class BeruangElement extends BeruangObserver(BeruangProperty(BeruangView(HTMLElement))) {
   static _viewTmpl = {};
 
   constructor() {
     super();
 
+    let prop = {};
+    let obs = [];
     let cls = this.constructor;
     while(cls) {
+      if(cls.observers) {
+        obs = obs.concat(cls.observers);
+      }
       if(cls.properties) {
-        this._setProperty(cls.properties);
+        for (let [p, v] of Object.entries(cls.properties)) {
+          if(!prop.hasOwnProperty(p)) {
+            prop[p]=v;
+          }
+        }
       }
       cls = Object.getPrototypeOf(cls);//parent
     }
+    this._setObserver(obs);
+    this._setProperty(prop);
 
     this._createShadow((tmpl) => {
       let shadowRoot = this.attachShadow({mode: 'open'});
@@ -22,6 +34,19 @@ class BeruangElement extends BeruangProperty(BeruangView(HTMLElement)) {
       this._parseNode(shadowRoot, nodes);
       this._solveNode(nodes);
     });
+  }
+
+  static get properties() {
+    return {
+      connected:{
+        type:Boolean,
+        value:false
+      }
+    };
+  }
+
+  connectedCallback() {
+    this.connected = true;
   }
 
   _createShadow(templateCallback) {

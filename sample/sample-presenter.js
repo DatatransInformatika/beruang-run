@@ -66,8 +66,16 @@ class SamplePresenter extends BeruangPresenter(BeruangArray(HTMLElement)){
     }
   }
 
+  static get observers() {
+    return ['_labelAddress(connected, label, address)'];
+  }
+
   labelChanged(newVal, oldVal) {
     //console.log(newVal, oldVal);
+  }
+
+  _labelAddress(connected, label, address) {
+    console.log('_labelAddress', connected, label, address);
   }
 }
 
