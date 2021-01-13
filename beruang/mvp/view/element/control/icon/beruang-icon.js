@@ -31,26 +31,27 @@ class BeruangIcon extends BeruangElement {
       this._iconset.removeIcon(this);
     }
     let parts = (icon || '').split(':');
-    let iconName = parts.pop();
-    let iconSetName = parts.pop();
-    this._iconset = window.iconset[iconSetName];
-    if(this._iconset) {
-      this._iconset.createIcon(this, iconName);
+    this._iconName = parts.pop();
+    this._iconSetName = parts.pop();
+    this._createIcon();
+  }
+
+  _createIcon() {
+    this._iconset = window.iconset[this._iconSetName];
+    if(!this._iconset) {
+      this._fbind = this._createIcon.bind(this);
+      window.addEventListener('iconset', this._fbind);
     } else {
-      let timeout = 1000;
-      let x = setInterval(()=>{
-        this._iconset = window.iconset[iconSetName];
-        if(timeout<=0 || this._iconset) {
-          if(this._iconset) {
-            this._iconset.createIcon(this, iconName);
-          }
-          clearInterval(x);
-        } else {
-          timeout -= 100;
-        }
-      }, 100);
+      this._iconset.createIcon(this, this._iconName);
+      if(this._fbind) {
+        window.removeEventListener('iconset', this._fbind);
+        delete this._fbind;
+      }
+      delete this._iconName;
+      delete this._iconSetName;
     }
   }
+
 }
 
 window.customElements.define('beruang-icon', BeruangIcon);

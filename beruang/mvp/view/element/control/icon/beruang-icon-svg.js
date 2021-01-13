@@ -52,6 +52,9 @@ class BeruangIconSvg extends BeruangElement {
       window.iconset.delete(oldVal);
     }
     window.iconset[newVal] = this;
+    setTimeout(()=>{
+      window.dispatchEvent(new CustomEvent("iconset"));
+    }, 0);
   }
 
   _createIconMap() {
