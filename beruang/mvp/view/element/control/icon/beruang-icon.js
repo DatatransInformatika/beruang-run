@@ -6,8 +6,7 @@ class BeruangIcon extends BeruangElement {
     return {
       icon: {
         type:String,
-        value:'',
-        observer:'_nameChanged'
+        value:''
       }
     }
   }
@@ -17,7 +16,8 @@ class BeruangIcon extends BeruangElement {
       display:inline-block;
       fill:currentcolor;
       stroke:none;
-    }`; }
+    }`;
+  }
 
   static get observers() {
     return ['_iconChanged(connected, icon)'];
