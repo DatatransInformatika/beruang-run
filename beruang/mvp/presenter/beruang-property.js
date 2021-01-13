@@ -47,7 +47,10 @@ class extends base {
   }
 
   _setProperty(props) {
+    this._initialSetup = {'observer':{}};
+
     for (let [p, v] of Object.entries(props)) {
+
       if(this.hasOwnProperty(p)) {
         continue;
       }
@@ -57,6 +60,7 @@ class extends base {
         || v.type===Object || v.type===Array;
 
       if(validType) {
+
         Object.defineProperty(this, p,
           { get:this._getter(p, v.type),
             set:this._setter(p, v.type, v.observer, v.reflectToAttribute)
@@ -82,6 +86,16 @@ class extends base {
         this[p] = this._coercer.coerce(v.type, _v);
       }
     }
+
+    for (let [p, v] of Object.entries(this._initialSetup.observer)) {
+      if(this[p]) {
+        this[p].apply(this, v);
+      } else if(this._view[p]) {
+        this._view[p].apply(this._view, v);
+      }
+    }
+
+    delete this._initialSetup;
   }
 
   _getter(p, vt) {
@@ -104,15 +118,19 @@ class extends base {
           return;
       }
 
-      if(this._view) {
+      if(!this._initialSetup && this._view) {
         this._delayedUpdateNode(p);
       }
 
-      if(observer){
-        if(this[observer]) {
-          this[observer].apply(this, [val, old]);
-        } else if(this._view[observer]) {
-          this._view[observer].apply(this, [val, old]);
+      if(observer) {
+        if(this._initialSetup) {
+          this._initialSetup.observer[observer] = [val, old];
+        } else {
+          if(this[observer]) {
+            this[observer].apply(this, [val, old]);
+          } else if(this._view[observer]) {
+            this._view[observer].apply(this, [val, old]);
+          }
         }
       }
 

@@ -8,13 +8,13 @@
 }
 </style>`;
 
-  class BeruangPolar extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({mode: 'open'});
-      this.shadowRoot.appendChild(template.content.cloneNode(true));
-    }
+class BeruangPolar extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({mode: 'open'});
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
   }
+}
 
-  window.customElements.define('beruang-theme', BeruangPolar);
+window.customElements.define('beruang-theme', BeruangPolar);
 })();

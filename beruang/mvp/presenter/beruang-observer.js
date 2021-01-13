@@ -28,7 +28,11 @@ class extends base {
           funcObj.fargs.forEach((arg, i) => {
             args.push(this[arg]);
           });
-          this[funcObj.fname].apply(this, args);
+          if(this._initialSetup) {
+            this._initialSetup.observer[funcObj.fname] = args;
+          } else {
+            this[funcObj.fname].apply(this, args);
+          }
         }
       }
     }

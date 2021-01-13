@@ -96,6 +96,7 @@ class extends base {
           } else if(node.nodeType==1/*Element*/) {
             if(node.localName==='template') {
               if( node.hasAttribute(this._switchAttribute) ) {
+console.log('_updateNode switch');
                 substitute = !!this._switchParser;
               } else if( node.hasAttribute(this._arrayAttribute) ) {
                 substitute = !!this._arrayParser;

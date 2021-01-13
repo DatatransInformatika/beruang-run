@@ -1,6 +1,8 @@
 import {BeruangElement} from '../../beruang-element.js'
+import {BeruangStyleParser} from '../../../nodeparser/beruang-style-parser.js';
+import '../../../style/beruang-layout.js';
 
-class BeruangIcon extends BeruangElement {
+class BeruangIcon extends BeruangStyleParser(BeruangElement) {
 
   static get properties() {
     return {
@@ -11,12 +13,14 @@ class BeruangIcon extends BeruangElement {
     }
   }
 
-  static get template() { return `<style>
+  static get template() { return `<style include="beruang-layout">
     :host {
-      display:inline-block;
+      @apply --layout-inline;
+      position:relative;
       fill:currentcolor;
       stroke:none;
-    }`;
+    }
+    </style>`;
   }
 
   static get observers() {
